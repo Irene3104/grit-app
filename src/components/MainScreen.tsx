@@ -12,11 +12,12 @@ interface Props {
   onNewGoal: () => void;
 }
 
-const CHAR_EMOJI: Record<string, string> = {
-  tiger: '🐯',
-  capybara: '🦦',
-  kangaroo: '🦘',
-  koala: '🐨',
+// 이미지 경로
+const CHAR_IMG: Record<string, string> = {
+  tiger: '/characters/tiger.png',
+  capybara: '/characters/capybara.png',
+  kangaroo: '/characters/kangaroo.png',
+  koala: '/characters/koala.png',
 };
 
 const DURATION_LABEL: Record<string, string> = {
@@ -168,25 +169,35 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 <span style={styles.metersSubText}>남음</span>
               </div>
             </div>
-            {/* 캐릭터 */}
+            {/* 캐릭터 — 등반 모션 */}
             <motion.div style={styles.charWrap}
-              animate={{
-                bottom: `${charBottom}%`,
-                x: slipping ? [-8, 8, -8, 0] : 0,
-                rotate: oneHandMode ? [-15, 15, -15] : slipping ? [-10, 10, 0] : 0,
-              }}
-              transition={{
-                bottom: { duration: 0.8, ease: 'easeOut' },
-                x: { duration: 0.4 },
-                rotate: oneHandMode ? { duration: 0.4, repeat: Infinity } : { duration: 0.3 },
-              }}
+              animate={{ bottom: `${charBottom}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
             >
-              <motion.span style={styles.charEmoji}
-                animate={slipping ? { y: [0, 8, 0] } : oneHandMode ? { y: [0, 4, 0] } : { y: [0, -3, 0] }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-              >
-                {CHAR_EMOJI[data.character]}
-              </motion.span>
+              <motion.img
+                src={CHAR_IMG[data.character]}
+                alt="character"
+                style={{
+                  ...styles.charImg,
+                  filter: slipping
+                    ? 'drop-shadow(0 0 8px #ff4444)'
+                    : oneHandMode
+                    ? 'drop-shadow(0 0 6px #ffaa00)'
+                    : 'drop-shadow(0 0 6px rgba(255,255,255,0.3))',
+                }}
+                animate={
+                  slipping
+                    ? { x: [-6, 6, -4, 4, 0], y: [0, 6, 0], rotate: [-8, 8, 0] }
+                    : oneHandMode
+                    ? { x: [-3, 3, -3], rotate: [-8, 8, -8], y: [0, 3, 0] }
+                    : { y: [0, -4, -2, -6, -2, 0], x: [-1, 1, -1, 1, 0], rotate: [-2, 2, -1, 2, 0] }
+                }
+                transition={
+                  slipping ? { duration: 0.5 }
+                  : oneHandMode ? { duration: 0.4, repeat: Infinity }
+                  : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                }
+              />
               {oneHandMode && (
                 <motion.div style={styles.dangerBadge}
                   animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }}
@@ -254,7 +265,7 @@ const styles: Record<string, React.CSSProperties> = {
   metersText: { color: '#ffffff', fontSize: '0.85rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
   metersSubText: { color: '#ffffff60', fontSize: '0.6rem' },
   charWrap: { position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 },
-  charEmoji: { fontSize: '1.8rem', filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.4))', display: 'block' },
+  charImg: { width: '70px', height: '70px', objectFit: 'contain' } as React.CSSProperties,
   dangerBadge: { fontSize: '0.8rem', marginTop: '-4px' },
   ground: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.3rem 0' },
 };

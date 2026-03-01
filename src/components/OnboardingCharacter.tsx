@@ -7,11 +7,11 @@ interface Props {
   onBack: () => void;
 }
 
-const CHARACTERS: { id: Character; emoji: string; name: string; desc: string }[] = [
-  { id: 'tiger', emoji: '🐯', name: '호랑이', desc: '불굴의 의지' },
-  { id: 'capybara', emoji: '🦦', name: '카피바라', desc: '여유로운 현자' },
-  { id: 'kangaroo', emoji: '🦘', name: '캥거루', desc: '에너지 폭발' },
-  { id: 'koala', emoji: '🐨', name: '코알라', desc: '귀엽고 집요한' },
+const CHARACTERS: { id: Character; name: string; desc: string }[] = [
+  { id: 'tiger', name: '호랑이', desc: '불굴의 의지' },
+  { id: 'capybara', name: '카피바라', desc: '여유로운 현자' },
+  { id: 'kangaroo', name: '캥거루', desc: '에너지 폭발' },
+  { id: 'koala', name: '코알라', desc: '귀엽고 집요한' },
 ];
 
 export default function OnboardingCharacter({ onNext, onBack }: Props) {
@@ -31,7 +31,11 @@ export default function OnboardingCharacter({ onNext, onBack }: Props) {
             style={{ ...styles.card, ...(selected === c.id ? styles.cardSelected : {}) }}
             onClick={() => setSelected(c.id)}
           >
-            <span style={styles.emoji}>{c.emoji}</span>
+            <img
+              src={`/characters/${c.id}.png`}
+              alt={c.name}
+              style={styles.charImg}
+            />
             <span style={styles.name}>{c.name}</span>
             <span style={styles.desc}>{c.desc}</span>
           </motion.button>
@@ -63,7 +67,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center', gap: '0.5rem', cursor: 'pointer',
   },
   cardSelected: { background: '#ffffff15', border: '1.5px solid #ffffff' },
-  emoji: { fontSize: '2.5rem' },
+  charImg: { width: '80px', height: '80px', objectFit: 'contain' } as React.CSSProperties,
   name: { color: '#ffffff', fontSize: '1rem', fontWeight: '600' },
   desc: { color: '#ffffff60', fontSize: '0.8rem' },
   button: {

@@ -115,16 +115,13 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
         <div style={{ width: '80px' }} />
       </div>
 
-      {/* ===== 목표 표시 ===== */}
-      <div style={styles.goalSection}>
-        <p style={styles.goalText}>{data.goal}</p>
-        <p style={styles.durationText}>{durationLabel} 목표</p>
-      </div>
-
       {/* ===== 메인 영역 ===== */}
       <div style={styles.mainArea}>
         {/* 왼쪽: TODO */}
         <div style={styles.left}>
+          {/* 목표 — 정상 별과 같은 높이 */}
+          <p style={styles.goalText}>{data.goal}</p>
+          <p style={styles.durationText}>{durationLabel} 목표</p>
           <p style={styles.progressLabel}>{completedCount}/{totalCount} 완료</p>
           <div style={styles.todoList}>
             {todos.map((todo) => (
@@ -224,18 +221,16 @@ const styles: Record<string, React.CSSProperties> = {
   // 헤더
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '1rem 1.5rem', borderBottom: '1px solid #ffffff10',
+    padding: '1rem 1.5rem',
   },
   livesRow: { display: 'flex', gap: '0.3rem', width: '80px' },
   timer: { fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', fontVariantNumeric: 'tabular-nums' },
   timerUrgent: { color: '#ff6666' },
-  // 목표 섹션
-  goalSection: { padding: '1.2rem 1.5rem 0.5rem', borderBottom: '1px solid #ffffff08' },
-  goalText: { fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', lineHeight: 1.3 },
-  durationText: { fontSize: '0.8rem', color: '#ffffff40', marginTop: '0.3rem' },
   // 메인
   mainArea: { display: 'flex', flex: 1 },
-  left: { flex: 1, padding: '1.2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' },
+  left: { flex: 1, padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
+  goalText: { fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', lineHeight: 1.3 },
+  durationText: { fontSize: '0.8rem', color: '#ffffff40', marginBottom: '0.2rem' },
   progressLabel: { color: '#ffffff80', fontSize: '0.9rem', fontWeight: '600' },
   todoList: { display: 'flex', flexDirection: 'column', gap: '0.7rem' },
   todoItem: { display: 'flex', alignItems: 'center', gap: '0.7rem' },

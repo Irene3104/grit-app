@@ -4,9 +4,12 @@ import type { GritData } from '../types';
 import { useGameEngine } from '../hooks/useGameEngine';
 import GameOver from './GameOver';
 import Success from './Success';
+import PomodoroModal from './PomodoroModal';
 
 interface Props {
   data: GritData;
+  onNewTodos: () => void;
+  onNewGoal: () => void;
 }
 
 const CHAR_EMOJI: Record<string, string> = {
@@ -14,6 +17,13 @@ const CHAR_EMOJI: Record<string, string> = {
   capybara: '🦦',
   kangaroo: '🦘',
   koala: '🐨',
+};
+
+const DURATION_LABEL: Record<string, string> = {
+  '1day': '하루',
+  '3days': '3일',
+  '1week': '일주일',
+  'custom': '',
 };
 
 function formatTime(ms: number) {
@@ -25,141 +35,144 @@ function formatTime(ms: number) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-export default function MainScreen({ data }: Props) {
+export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [todos, setTodos] = useState(data.todos);
+  const [pomodoroTodo, setPomodoroTodo] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const {
-    lives,
-    progress,
-    slipping,
-    oneHandMode,
-    timeLeftMs,
-    metersLeft,
-    isDead,
-    isSuccess,
-    toggleTodo,
-    completedCount,
-    totalCount,
+    lives, progress, slipping, oneHandMode, timeLeftMs,
+    metersLeft, isDead, isSuccess, toggleTodo, completedCount, totalCount,
   } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod);
 
   const isUrgent = timeLeftMs <= 2 * 60 * 60 * 1000 && completedCount < totalCount;
   const isCritical = timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
-
-  if (isDead) return <GameOver character={data.character} />;
-  if (isSuccess) return <Success goal={data.goal} character={data.character} />;
-
-  // 캐릭터 절벽 위치 (하단 10% ~ 상단 85%)
+  const durationLabel = DURATION_LABEL[data.duration] || data.customDate;
   const charBottom = 10 + progress * 75;
 
+  if (isDead) return <GameOver character={data.character} onRetry={onNewGoal} />;
+
+  if (isSuccess && !showSuccess) {
+    // 성공 씬 보여주고 나서 선택화면으로
+    return <Success goal={data.goal} character={data.character} onDone={() => setShowSuccess(true)} />;
+  }
+
+  if (showSuccess) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a1a0a, #1a2a0a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2rem', padding: '2rem' }}>
+        <p style={{ fontSize: '1.8rem', fontWeight: '700', color: '#ffffff' }}>오늘도 수고했어요! 🎉</p>
+        <p style={{ color: '#ffffff60' }}>다음은 무엇을 할까요?</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '360px' }}>
+          <motion.button whileTap={{ scale: 0.95 }}
+            style={{ background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem', cursor: 'pointer' }}
+            onClick={onNewTodos}
+          >
+            <span style={{ fontSize: '1.8rem' }}>📝</span>
+            <span style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: '600' }}>새로운 할 일 작성</span>
+            <span style={{ color: '#ffffff50', fontSize: '0.85rem' }}>같은 목표를 향해 계속 나아가기</span>
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.95 }}
+            style={{ background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem', cursor: 'pointer' }}
+            onClick={onNewGoal}
+          >
+            <span style={{ fontSize: '1.8rem' }}>🏔️</span>
+            <span style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: '600' }}>새로운 목표 설정</span>
+            <span style={{ color: '#ffffff50', fontSize: '0.85rem' }}>새로운 도전을 시작하기</span>
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      style={{
-        ...styles.container,
-        ...(isCritical ? styles.containerCritical : {}),
-      }}
-    >
-      {/* 긴박함 테두리 깜빡임 */}
+    <div style={{ ...styles.container, ...(isCritical ? styles.containerCritical : {}) }}>
       {isCritical && (
-        <motion.div
-          style={styles.criticalBorder}
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 0.6, repeat: Infinity }}
+        <motion.div style={styles.criticalBorder}
+          animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 0.6, repeat: Infinity }}
         />
       )}
 
-      {/* ===== 왼쪽: TODO + 정보 ===== */}
-      <div style={styles.left}>
-        {/* 목숨 */}
+      {/* ===== 상단 헤더 ===== */}
+      <div style={styles.header}>
+        {/* 왼쪽: 하트 */}
         <div style={styles.livesRow}>
           {Array.from({ length: 3 }).map((_, i) => (
-            <motion.span
-              key={i}
-              style={{ fontSize: '1.4rem', opacity: i < lives ? 1 : 0.2 }}
+            <motion.span key={i} style={{ fontSize: '1.3rem', opacity: i < lives ? 1 : 0.2 }}
               animate={i === lives && slipping ? { scale: [1, 1.5, 1] } : {}}
-            >
-              ❤️
-            </motion.span>
+            >❤️</motion.span>
           ))}
         </div>
 
-        {/* 카운트다운 */}
-        <motion.div
-          style={{
-            ...styles.timer,
-            ...(isUrgent ? styles.timerUrgent : {}),
-          }}
-          animate={isUrgent ? { scale: [1, 1.02, 1] } : {}}
+        {/* 중앙: 타이머 */}
+        <motion.div style={{ ...styles.timer, ...(isUrgent ? styles.timerUrgent : {}) }}
+          animate={isUrgent ? { scale: [1, 1.03, 1] } : {}}
           transition={{ duration: 1, repeat: Infinity }}
         >
           ⏱ {formatTime(timeLeftMs)}
         </motion.div>
 
-        {/* 목표 */}
-        <p style={styles.goalLabel}>{data.goal}</p>
-        <p style={styles.progressLabel}>
-          {completedCount}/{totalCount} 완료
-        </p>
-
-        {/* TODO 리스트 */}
-        <div style={styles.todoList}>
-          {todos.map((todo) => (
-            <motion.div
-              key={todo.id}
-              whileTap={{ scale: 0.97 }}
-              style={styles.todoItem}
-              onClick={() => toggleTodo(todo.id)}
-            >
-              <motion.div
-                style={{
-                  ...styles.checkbox,
-                  ...(todo.completed ? styles.checkboxDone : {}),
-                }}
-                animate={todo.completed ? { scale: [1, 1.3, 1] } : {}}
-              >
-                {todo.completed && '✓'}
-              </motion.div>
-              <span
-                style={{
-                  ...styles.todoText,
-                  ...(todo.completed ? styles.todoTextDone : {}),
-                }}
-              >
-                {todo.text}
-              </span>
-            </motion.div>
-          ))}
-        </div>
+        {/* 오른쪽: 빈 공간 (밸런스용) */}
+        <div style={{ width: '80px' }} />
       </div>
 
-      {/* ===== 오른쪽: 절벽 ===== */}
-      <div style={styles.right}>
-        {/* 정상 */}
-        <div style={styles.summit}>
-          <span style={{ fontSize: '1.2rem' }}>⭐</span>
-          <span style={styles.summitLabel}>정상</span>
+      {/* ===== 목표 표시 ===== */}
+      <div style={styles.goalSection}>
+        <p style={styles.goalText}>{data.goal}</p>
+        <p style={styles.durationText}>{durationLabel} 목표</p>
+      </div>
+
+      {/* ===== 메인 영역 ===== */}
+      <div style={styles.mainArea}>
+        {/* 왼쪽: TODO */}
+        <div style={styles.left}>
+          <p style={styles.progressLabel}>{completedCount}/{totalCount} 완료</p>
+          <div style={styles.todoList}>
+            {todos.map((todo) => (
+              <div key={todo.id} style={styles.todoItem}>
+                {/* 체크박스 */}
+                <motion.div
+                  style={{ ...styles.checkbox, ...(todo.completed ? styles.checkboxDone : {}) }}
+                  animate={todo.completed ? { scale: [1, 1.3, 1] } : {}}
+                  onClick={() => toggleTodo(todo.id)}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {todo.completed && '✓'}
+                </motion.div>
+                {/* 할일 텍스트 — 클릭 시 포모도로 */}
+                <span
+                  style={{ ...styles.todoText, ...(todo.completed ? styles.todoTextDone : {}) }}
+                  onClick={() => !todo.completed && setPomodoroTodo(todo.text)}
+                >
+                  {todo.text}
+                </span>
+                {/* 타이머 아이콘 힌트 */}
+                {!todo.completed && (
+                  <span style={styles.timerIcon} onClick={() => setPomodoroTodo(todo.text)}>⏲</span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* 절벽 */}
-        <div style={styles.cliffWrap}>
-          <div style={styles.cliff}>
-            {/* 진행 바 */}
-            <motion.div
-              style={styles.progressBar}
-              animate={{ height: `${progress * 100}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-            />
-
-            {/* 거리 표시 */}
-            <div style={styles.metersTag}>
-              <span style={styles.metersText}>{metersLeft}m</span>
-              <span style={styles.metersSubText}>남음</span>
-            </div>
+        {/* 오른쪽: 절벽 */}
+        <div style={styles.right}>
+          <div style={styles.summit}>
+            <span style={{ fontSize: '1.2rem' }}>⭐</span>
+            <span style={styles.summitLabel}>정상</span>
           </div>
-
-          {/* 캐릭터 */}
-          <AnimatePresence>
-            <motion.div
-              style={styles.charWrap}
+          <div style={styles.cliffWrap}>
+            <div style={styles.cliff}>
+              <motion.div style={styles.progressBar}
+                animate={{ height: `${progress * 100}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              />
+              <div style={styles.metersTag}>
+                <span style={styles.metersText}>{metersLeft}m</span>
+                <span style={styles.metersSubText}>남음</span>
+              </div>
+            </div>
+            {/* 캐릭터 */}
+            <motion.div style={styles.charWrap}
               animate={{
                 bottom: `${charBottom}%`,
                 x: slipping ? [-8, 8, -8, 0] : 0,
@@ -168,218 +181,85 @@ export default function MainScreen({ data }: Props) {
               transition={{
                 bottom: { duration: 0.8, ease: 'easeOut' },
                 x: { duration: 0.4 },
-                rotate: oneHandMode
-                  ? { duration: 0.4, repeat: Infinity }
-                  : { duration: 0.3 },
+                rotate: oneHandMode ? { duration: 0.4, repeat: Infinity } : { duration: 0.3 },
               }}
             >
-              <motion.span
-                style={styles.charEmoji}
-                animate={
-                  slipping
-                    ? { y: [0, 8, 0] }
-                    : oneHandMode
-                    ? { y: [0, 4, 0] }
-                    : { y: [0, -3, 0] }
-                }
+              <motion.span style={styles.charEmoji}
+                animate={slipping ? { y: [0, 8, 0] } : oneHandMode ? { y: [0, 4, 0] } : { y: [0, -3, 0] }}
                 transition={{ duration: 1.2, repeat: Infinity }}
               >
                 {CHAR_EMOJI[data.character]}
               </motion.span>
               {oneHandMode && (
-                <motion.div
-                  style={styles.dangerBadge}
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 0.5, repeat: Infinity }}
-                >
-                  ⚠️
-                </motion.div>
+                <motion.div style={styles.dangerBadge}
+                  animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }}
+                >⚠️</motion.div>
               )}
             </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* 바닥 */}
-        <div style={styles.ground}>
-          <span style={{ fontSize: '1rem' }}>💀</span>
+          </div>
+          <div style={styles.ground}><span style={{ fontSize: '1rem' }}>💀</span></div>
         </div>
       </div>
+
+      {/* 포모도로 모달 */}
+      <AnimatePresence>
+        {pomodoroTodo && (
+          <PomodoroModal todoText={pomodoroTodo} onClose={() => setPomodoroTodo(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    display: 'flex',
-    minHeight: '100vh',
-    background: 'linear-gradient(to bottom, #080818, #18182a)',
-    position: 'relative',
-    overflow: 'hidden',
-    transition: 'background 1s',
+    display: 'flex', flexDirection: 'column', minHeight: '100vh',
+    background: 'linear-gradient(to bottom, #080818, #18182a)', position: 'relative', overflow: 'hidden',
   },
-  containerCritical: {
-    background: 'linear-gradient(to bottom, #180808, #2a0808)',
-  },
+  containerCritical: { background: 'linear-gradient(to bottom, #180808, #2a0808)' },
   criticalBorder: {
-    position: 'fixed',
-    inset: 0,
-    border: '4px solid #ff4444',
-    pointerEvents: 'none',
-    zIndex: 100,
-    borderRadius: '0',
+    position: 'fixed', inset: 0, border: '4px solid #ff4444',
+    pointerEvents: 'none', zIndex: 100,
   },
-  left: {
-    flex: 1,
-    padding: '1.5rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.8rem',
-    justifyContent: 'center',
+  // 헤더
+  header: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '1rem 1.5rem', borderBottom: '1px solid #ffffff10',
   },
-  livesRow: {
-    display: 'flex',
-    gap: '0.3rem',
-    marginBottom: '0.2rem',
-  },
-  timer: {
-    fontSize: '1.6rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  timerUrgent: {
-    color: '#ff6666',
-  },
-  goalLabel: {
-    color: '#ffffff50',
-    fontSize: '0.8rem',
-    letterSpacing: '0.05em',
-    marginTop: '0.4rem',
-  },
-  progressLabel: {
-    color: '#ffffff',
-    fontSize: '1.1rem',
-    fontWeight: '600',
-  },
-  todoList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.7rem',
-    marginTop: '0.3rem',
-  },
-  todoItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.7rem',
-    cursor: 'pointer',
-    padding: '0.3rem 0',
-  },
+  livesRow: { display: 'flex', gap: '0.3rem', width: '80px' },
+  timer: { fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', fontVariantNumeric: 'tabular-nums' },
+  timerUrgent: { color: '#ff6666' },
+  // 목표 섹션
+  goalSection: { padding: '1.2rem 1.5rem 0.5rem', borderBottom: '1px solid #ffffff08' },
+  goalText: { fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', lineHeight: 1.3 },
+  durationText: { fontSize: '0.8rem', color: '#ffffff40', marginTop: '0.3rem' },
+  // 메인
+  mainArea: { display: 'flex', flex: 1 },
+  left: { flex: 1, padding: '1.2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' },
+  progressLabel: { color: '#ffffff80', fontSize: '0.9rem', fontWeight: '600' },
+  todoList: { display: 'flex', flexDirection: 'column', gap: '0.7rem' },
+  todoItem: { display: 'flex', alignItems: 'center', gap: '0.7rem' },
   checkbox: {
-    width: '20px',
-    height: '20px',
-    borderRadius: '5px',
-    border: '2px solid #ffffff40',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '0.7rem',
-    color: '#000',
-    flexShrink: 0,
-    transition: 'all 0.2s',
+    width: '20px', height: '20px', borderRadius: '5px', border: '2px solid #ffffff40',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '0.7rem', color: '#000', flexShrink: 0, cursor: 'pointer', transition: 'all 0.2s',
   },
-  checkboxDone: {
-    background: '#ffffff',
-    border: '2px solid #ffffff',
-  },
-  todoText: {
-    color: '#ffffff',
-    fontSize: '0.95rem',
-  },
-  todoTextDone: {
-    textDecoration: 'line-through',
-    color: '#ffffff35',
-  },
-  right: {
-    width: '130px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: '1rem',
-    paddingBottom: '1rem',
-    position: 'relative',
-  },
-  summit: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.2rem',
-    marginBottom: '0.5rem',
-  },
-  summitLabel: {
-    color: '#ffffff80',
-    fontSize: '0.7rem',
-  },
-  cliffWrap: {
-    flex: 1,
-    width: '60px',
-    position: 'relative',
-  },
-  cliff: {
-    position: 'absolute',
-    inset: 0,
-    background: '#2a2a3a',
-    borderRadius: '6px 6px 0 0',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-  },
-  progressBar: {
-    background: 'linear-gradient(to top, #5555ff, #aaaaff)',
-    width: '100%',
-  },
-  metersTag: {
-    position: 'absolute',
-    top: '8px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '1px',
-  },
-  metersText: {
-    color: '#ffffff',
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  metersSubText: {
-    color: '#ffffff60',
-    fontSize: '0.6rem',
-  },
-  charWrap: {
-    position: 'absolute',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  charEmoji: {
-    fontSize: '1.8rem',
-    filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.4))',
-    display: 'block',
-  },
-  dangerBadge: {
-    fontSize: '0.8rem',
-    marginTop: '-4px',
-  },
-  ground: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0.3rem 0',
-  },
+  checkboxDone: { background: '#ffffff', border: '2px solid #ffffff' },
+  todoText: { color: '#ffffff', fontSize: '0.95rem', flex: 1, cursor: 'pointer' },
+  todoTextDone: { textDecoration: 'line-through', color: '#ffffff35' },
+  timerIcon: { color: '#ffffff30', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 },
+  // 절벽
+  right: { width: '130px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '1rem', paddingBottom: '1rem', position: 'relative' },
+  summit: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', marginBottom: '0.5rem' },
+  summitLabel: { color: '#ffffff80', fontSize: '0.7rem' },
+  cliffWrap: { flex: 1, width: '60px', position: 'relative' },
+  cliff: { position: 'absolute', inset: 0, background: '#2a2a3a', borderRadius: '6px 6px 0 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
+  progressBar: { background: 'linear-gradient(to top, #5555ff, #aaaaff)', width: '100%' },
+  metersTag: { position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  metersText: { color: '#ffffff', fontSize: '0.85rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
+  metersSubText: { color: '#ffffff60', fontSize: '0.6rem' },
+  charWrap: { position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 },
+  charEmoji: { fontSize: '1.8rem', filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.4))', display: 'block' },
+  dangerBadge: { fontSize: '0.8rem', marginTop: '-4px' },
+  ground: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.3rem 0' },
 };

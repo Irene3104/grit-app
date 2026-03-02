@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GritData } from '../types';
 import { useGameEngine } from '../hooks/useGameEngine';
@@ -63,7 +63,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
     if (frames.length <= 1) return;
     const interval = setInterval(() => {
       setFrameIdx(i => (i + 1) % frames.length);
-    }, 350); // 350ms마다 프레임 전환
+    }, 400);
     return () => clearInterval(interval);
   }, [frames.length]);
 
@@ -75,7 +75,27 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const isUrgent = timeLeftMs <= 2 * 60 * 60 * 1000 && completedCount < totalCount;
   const isCritical = timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
   const durationLabel = DURATION_LABEL[data.duration] || data.customDate;
-  const charBottom = 10 + progress * 75;
+
+  // 클리프 존 실제 높이 측정
+  const cliffZoneRef = useRef<HTMLDivElement>(null);
+  const [cliffHeight, setCliffHeight] = useState(0);
+  useEffect(() => {
+    const el = cliffZoneRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => setCliffHeight(el.clientHeight));
+    obs.observe(el);
+    setCliffHeight(el.clientHeight);
+    return () => obs.disconnect();
+  }, []);
+
+  // 캐릭터 픽셀 위치 (bottom 기준)
+  // progress=0 → 바닥(bottom=8px), progress=1 → 정상(bottom=cliffHeight-80px)
+  const CHAR_SIZE = 64;
+  const BOTTOM_PAD = 8;
+  const TOP_PAD = 16;
+  const charBottomPx = cliffHeight > 0
+    ? BOTTOM_PAD + progress * (cliffHeight - CHAR_SIZE - BOTTOM_PAD - TOP_PAD)
+    : BOTTOM_PAD;
 
   if (isDead) return <GameOver character={data.character} onRetry={onNewGoal} />;
 
@@ -190,7 +210,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           </div>
 
           {/* 암벽 구역 */}
-          <div style={styles.cliffZone}>
+          <div style={styles.cliffZone} ref={cliffZoneRef}>
             {/* 암벽 이미지 */}
             <img src="/cliff-wall.png" alt="cliff" style={styles.cliffImg} />
 
@@ -201,11 +221,11 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
 
-            {/* 캐릭터 — 암벽 왼쪽 면, 진행도에 따라 위로 이동 */}
+            {/* 캐릭터 — 암벽 왼쪽 면, 할일 완료에 따라 위로 이동 */}
             <motion.div
               style={styles.charWrap}
-              animate={{ bottom: `${charBottom}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
+              animate={{ bottom: charBottomPx }}
+              transition={{ duration: 1.0, ease: 'easeOut' }}
             >
               <motion.img
                 src={
@@ -373,11 +393,11 @@ const styles: Record<string, React.CSSProperties> = {
   metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
   metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
 
-  // 캐릭터 — 암벽 왼쪽 면에 딱 붙어서 bottom%로 위치
+  // 캐릭터 — 암벽 왼쪽 면에 붙어서 픽셀 단위로 이동
   charWrap: {
     position: 'absolute',
-    right: '44px',             // 암벽(60px) 왼쪽으로 튀어나옴 (캐릭터 60px 절반 + 암벽 왼쪽 여유)
-    bottom: '10%',             // 초기값 — animate로 덮어씀
+    right: '48px',             // 암벽(60px) 왼쪽으로 튀어나옴
+    bottom: 8,                 // 초기값 (픽셀) — animate로 덮어씀
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Character } from '../types';
-import ClimbingCat from './ClimbingCat';
-
 interface Props {
   character: Character;
   goal: string;
@@ -57,12 +55,13 @@ export default function IntroScene({ character: _character, goal, onDone }: Prop
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.div
+            <motion.img
+              src="/characters/cat-profile.png"
+              alt="cat"
+              style={{ width: '100px', height: '100px', objectFit: 'contain' }}
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-            >
-              <ClimbingCat state="idle" size={90} />
-            </motion.div>
+            />
             <p style={styles.goalText}>"{goal}"</p>
           </motion.div>
         )}

@@ -103,36 +103,34 @@ export default function ClimbingCat({ state, size = 64 }: Props) {
       <path d="M8 20 Q6 25 9 28" stroke="#AA1100" strokeWidth="1" fill="none" />
       <path d="M28 20 Q30 25 27 28" stroke="#AA1100" strokeWidth="1" fill="none" />
 
-      {/* ===== 위쪽 팔 (오른손 — 위 홀드 잡기) ===== */}
+      {/* ===== 위쪽 팔 (오른손) — 위 홀드 잡고 당기기 ===== */}
+      {/* 사이클: 뻗기(위) → 잡고당기기(중간) → 뻗기(위) */}
       <motion.g
         style={{ transformOrigin: '25px 32px' } as React.CSSProperties}
         animate={climbing ? {
-          rotate: [-70, -30, -70],
-          y:      [-3,   2,  -3],
-        } : danger ? { rotate: [-80, -80] }
-          : { rotate: [-50, -50] }}
-        transition={{ duration: T, repeat: climbing || danger ? Infinity : 0, ease: 'easeInOut' }}
+          rotate: [-65, -35, -65],  // 위로 뻗기 → 당기기 → 다시 뻗기
+          y:      [ -4,   3,  -4],  // 올렸다가 내렸다가
+        } : danger ? { rotate: [-75], y: [-5] }
+          : { rotate: [-48], y: [0] }}
+        transition={{ duration: T * 2, repeat: climbing ? Infinity : 0, ease: [0.4, 0, 0.6, 1] }}
       >
-        {/* 윗팔 */}
         <rect x="23" y="28" width="6" height="10" rx="3" fill="#D07A3A" />
-        {/* 아랫팔 */}
         <rect x="24" y="36" width="5" height="10" rx="2.5" fill="#C06830" />
-        {/* 글러브 */}
         <ellipse cx="27" cy="47" rx="4.5" ry="3.5" fill="#1B5E20" />
         <circle cx="24.5" cy="45.5" r="1.5" fill="#145214" />
         <circle cx="27"   cy="44.8" r="1.5" fill="#145214" />
         <circle cx="29.5" cy="45.5" r="1.5" fill="#145214" />
       </motion.g>
 
-      {/* ===== 아래쪽 팔 (왼손 — 아래 홀드 잡기) ===== */}
+      {/* ===== 아래쪽 팔 (왼손) — 오른손과 반대 위상 ===== */}
       <motion.g
         style={{ transformOrigin: '25px 38px' } as React.CSSProperties}
         animate={climbing ? {
-          rotate: [-30, -70, -30],
-          y:      [2,   -3,   2],
-        } : danger ? { rotate: [20, 35, 20], x: [-3, 0, -3] }
-          : { rotate: [-30, -30] }}
-        transition={{ duration: T, repeat: climbing || danger ? Infinity : 0, ease: 'easeInOut', delay: T / 2 }}
+          rotate: [-35, -65, -35],  // 오른손이 위일 때 왼손은 아래
+          y:      [  3,  -4,   3],
+        } : danger ? { rotate: [15, 28, 15], x: [-2, 1, -2] }
+          : { rotate: [-32], y: [0] }}
+        transition={{ duration: T * 2, repeat: climbing || danger ? Infinity : 0, ease: [0.4, 0, 0.6, 1], delay: T }}
       >
         <rect x="23" y="34" width="6" height="10" rx="3" fill="#E8904A" />
         <rect x="24" y="42" width="5" height="10" rx="2.5" fill="#D07A3A" />

@@ -267,7 +267,8 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           <PomodoroModal
             todoText={pomodoroTodo.text}
             onClose={() => setPomodoroTodo(null)}
-            onComplete={() => { toggleTodo(pomodoroTodo.id); setPomodoroTodo(null); }}
+
+            onComplete={() => toggleTodo(pomodoroTodo.id)}
           />
         )}
       </AnimatePresence>

@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { Character } from '../types';
-import ClimbingCat from './ClimbingCat';
 
 interface Props {
   onNext: (character: Character) => void;
   onBack: () => void;
 }
 
-const CHARACTERS: { id: Character; name: string; desc: string; img?: string }[] = [
-  { id: 'cat', name: '고양이', desc: '겁없는 클라이머', img: '/characters/cat-profile-clean.png' },
+const CHARACTERS: { id: Character; name: string; desc: string; img: string }[] = [
+  { id: 'cat', name: '고양이', desc: '겁없는 클라이머', img: '/characters/cat-profile.png' },
 ];
 
 export default function OnboardingCharacter({ onNext, onBack }: Props) {
@@ -29,10 +28,7 @@ export default function OnboardingCharacter({ onNext, onBack }: Props) {
             style={{ ...styles.card, ...(selected === c.id ? styles.cardSelected : {}) }}
             onClick={() => setSelected(c.id)}
           >
-            {c.id === 'cat'
-              ? <ClimbingCat state="idle" size={80} />
-              : <img src={c.img ?? `/characters/${c.id}.png`} alt={c.name} style={styles.charImg} />
-            }
+            <img src={c.img} alt={c.name} style={styles.charImg} />
             <span style={styles.name}>{c.name}</span>
             <span style={styles.desc}>{c.desc}</span>
           </motion.button>

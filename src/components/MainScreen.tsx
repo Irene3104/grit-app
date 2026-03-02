@@ -290,7 +290,10 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
             onComplete={() => {
                 const current = pomodoroTodoRef.current;
                 if (current) {
-                  toggleTodoRef.current(current.id);
+                  // 직접 setTodos로 체크 — toggleTodo ref 우회
+                  setTodos(prev =>
+                    prev.map(t => t.id === current.id ? { ...t, completed: true } : t)
+                  );
                   setTimeout(() => setPomodoroTodo(null), 1800);
                 }
               }}

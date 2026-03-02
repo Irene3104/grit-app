@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GritData } from '../types';
 import { useGameEngine } from '../hooks/useGameEngine';
@@ -12,14 +12,29 @@ interface Props {
   onNewGoal: () => void;
 }
 
-// 이미지 경로
-const CHAR_IMG: Record<string, string> = {
-  tiger: '/characters/tiger.png',
-  capybara: '/characters/capybara.png',
-  kangaroo: '/characters/kangaroo.png',
-  koala: '/characters/koala.png',
-  rabbit: '/characters/rabbit.png',
-  squirrel: '/characters/squirrel.png',
+// 등반 스프라이트 프레임 (cat 기준)
+const CLIMB_FRAMES: Record<string, string[]> = {
+  cat: [
+    '/characters/cat-climb-1.png',
+    '/characters/cat-climb-2.png',
+    '/characters/cat-climb-3.png',
+    '/characters/cat-climb-4.png',
+    '/characters/cat-climb-5.png',
+  ],
+  tiger: ['/characters/tiger.png'],
+  capybara: ['/characters/capybara.png'],
+  kangaroo: ['/characters/kangaroo.png'],
+  koala: ['/characters/koala.png'],
+};
+
+// 상태별 이미지
+const STATE_IMG: Record<string, Record<string, string>> = {
+  cat: {
+    danger: '/characters/cat-danger.png',
+    fall:   '/characters/cat-fall.png',
+    success: '/characters/cat-success.png',
+    profile: '/characters/cat-profile-clean.png',
+  },
 };
 
 const DURATION_LABEL: Record<string, string> = {
@@ -42,6 +57,17 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [todos, setTodos] = useState(data.todos);
   const [pomodoroTodo, setPomodoroTodo] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // 스프라이트 프레임 전환
+  const frames = CLIMB_FRAMES[data.character] ?? CLIMB_FRAMES['tiger'];
+  const [frameIdx, setFrameIdx] = useState(0);
+  useEffect(() => {
+    if (frames.length <= 1) return;
+    const interval = setInterval(() => {
+      setFrameIdx(i => (i + 1) % frames.length);
+    }, 350); // 350ms마다 프레임 전환
+    return () => clearInterval(interval);
+  }, [frames.length]);
 
   const {
     lives, progress, slipping, oneHandMode, timeLeftMs,
@@ -185,7 +211,11 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
               transition={{ duration: 0.8, ease: 'easeOut' }}
             >
               <motion.img
-                src={CHAR_IMG[data.character] ?? '/characters/tiger.png'}
+                src={
+                  oneHandMode && STATE_IMG[data.character]?.danger
+                    ? STATE_IMG[data.character].danger
+                    : frames[frameIdx]
+                }
                 alt="character"
                 style={{
                   ...styles.charImg,

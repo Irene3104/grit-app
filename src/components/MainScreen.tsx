@@ -253,8 +253,8 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 src={wallFrames[frameIdx]}
                 alt="cat climbing"
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '56px',
+                  height: '112px',
                   objectFit: 'contain',
                   imageRendering: 'pixelated',  // 픽셀아트 선명하게
                   filter: slipping

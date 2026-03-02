@@ -176,35 +176,34 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           </div>
         </div>
 
-        {/* ===== 암벽 패널 — 화면 오른쪽 끝에 absolute 고정 ===== */}
+        {/* ===== 암벽 패널 — 화면 오른쪽 끝 고정 ===== */}
         <div style={styles.cliffPanel}>
 
-          {/* 정상 */}
+          {/* 정상 별 */}
           <div style={styles.summit}>
             <span style={{ fontSize: '1.1rem' }}>⭐</span>
             <span style={styles.summitLabel}>정상</span>
           </div>
 
-          {/* 암벽 구역 (이미지 + 오버레이 + 캐릭터) */}
-          <div style={styles.cliffZone}>
+          {/* 남은 거리 */}
+          <div style={styles.metersTag}>
+            <span style={styles.metersText}>{metersLeft}m</span>
+            <span style={styles.metersSubText}>남음</span>
+          </div>
 
-            {/* 암벽 이미지 — 오른쪽 끝에 딱 붙음 */}
+          {/* 암벽 구역 */}
+          <div style={styles.cliffZone}>
+            {/* 암벽 이미지 */}
             <img src="/cliff-wall.png" alt="cliff" style={styles.cliffImg} />
 
-            {/* 미완료 구간 어두운 오버레이 (위에서 내려옴) */}
+            {/* 미완료 구간 어두운 오버레이 */}
             <motion.div
               style={styles.progressOverlay}
               animate={{ height: `${(1 - progress) * 100}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
 
-            {/* 남은 거리 */}
-            <div style={styles.metersTag}>
-              <span style={styles.metersText}>{metersLeft}m</span>
-              <span style={styles.metersSubText}>남음</span>
-            </div>
-
-            {/* 캐릭터 — 암벽 왼쪽 면에 매달림, 진행도에 따라 위로 이동 */}
+            {/* 캐릭터 — 암벽 왼쪽 면, 진행도에 따라 위로 이동 */}
             <motion.div
               style={styles.charWrap}
               animate={{ bottom: `${charBottom}%` }}
@@ -223,7 +222,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                     ? 'drop-shadow(0 0 10px #ff4444)'
                     : oneHandMode
                     ? 'drop-shadow(0 0 8px #ffaa00)'
-                    : 'drop-shadow(0 0 6px rgba(255,255,255,0.4))',
+                    : 'drop-shadow(0 0 8px rgba(255,255,255,0.5))',
                 }}
                 animate={
                   slipping
@@ -310,57 +309,54 @@ const styles: Record<string, React.CSSProperties> = {
     minWidth: 0,
   },
 
-  // ===== 암벽 패널 — 화면 오른쪽 끝에 absolute 고정 =====
+  // ===== 암벽 패널 — 화면 오른쪽 끝 고정, 세로 전체 =====
   cliffPanel: {
     position: 'absolute',
     top: 0,
     right: 0,
     bottom: 0,
-    width: '72px',              // 암벽 너비
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',     // 오른쪽 끝 정렬
-    paddingTop: '3.5rem',       // 헤더 높이만큼
-    paddingBottom: '0.5rem',
-    overflow: 'visible',        // 캐릭터 왼쪽 삐져나옴 허용
+    width: '100px',
     zIndex: 20,
-  },
-
-  summit: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.15rem',
-    marginBottom: '0.3rem',
-    marginRight: '8px',
-  },
-  summitLabel: { color: '#ffffff80', fontSize: '0.65rem' },
-
-  // 암벽 이미지 + 캐릭터를 감싸는 컨테이너
-  cliffZone: {
-    flex: 1,
-    width: '56px',              // 암벽 실제 너비
-    position: 'relative',
     overflow: 'visible',
   },
 
-  // 암벽 이미지 — 세로 꽉 채움, 오른쪽 끝 고정
+  summit: {
+    position: 'absolute',
+    top: '60px',               // 헤더 아래
+    right: '10px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.1rem',
+    zIndex: 25,
+  },
+  summitLabel: { color: '#ffffff80', fontSize: '0.65rem' },
+
+  // 암벽 이미지 — 오른쪽 끝에 딱 붙어서 세로 전체
+  cliffZone: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '60px',
+    overflow: 'visible',
+  },
+
   cliffImg: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '56px',
+    width: '60px',
     height: '100%',
     objectFit: 'cover',
-    objectPosition: '40% top',
+    objectPosition: '35% top',
   } as React.CSSProperties,
 
-  // 미완료 구간 어두운 오버레이
   progressOverlay: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '56px',
+    width: '60px',
     background: 'rgba(0,0,0,0.65)',
     pointerEvents: 'none',
     zIndex: 2,
@@ -368,9 +364,9 @@ const styles: Record<string, React.CSSProperties> = {
 
   metersTag: {
     position: 'absolute',
-    top: '6px',
+    top: '70px',               // 헤더 아래 여백
     right: '0',
-    width: '56px',
+    width: '60px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -379,22 +375,26 @@ const styles: Record<string, React.CSSProperties> = {
   metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
   metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
 
-  // 캐릭터 — 암벽 왼쪽 면에 매달림
+  // 캐릭터 — 암벽 왼쪽 면에 딱 붙어서 bottom%로 위치
   charWrap: {
     position: 'absolute',
-    right: '36px',              // 암벽(56px) 왼쪽으로 튀어나옴
+    right: '44px',             // 암벽(60px) 왼쪽으로 튀어나옴 (캐릭터 60px 절반 + 암벽 왼쪽 여유)
+    bottom: '10%',             // 초기값 — animate로 덮어씀
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     zIndex: 10,
   },
-  charImg: { width: '60px', height: '60px', objectFit: 'contain' } as React.CSSProperties,
+  charImg: { width: '64px', height: '64px', objectFit: 'contain' } as React.CSSProperties,
   dangerBadge: { fontSize: '0.8rem', marginTop: '-4px' },
   ground: {
+    position: 'absolute',
+    bottom: '4px',
+    right: '0',
+    width: '60px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '56px',
-    padding: '0.3rem 0',
+    zIndex: 5,
   },
 };

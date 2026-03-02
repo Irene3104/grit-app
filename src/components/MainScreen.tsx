@@ -376,7 +376,7 @@ const styles: Record<string, React.CSSProperties> = {
     top: 0,
     right: 0,
     bottom: 0,
-    width: '100px',
+    width: '110px',
     zIndex: 20,
     overflow: 'visible',
   },
@@ -402,7 +402,7 @@ const styles: Record<string, React.CSSProperties> = {
     top: 0,
     right: 0,
     bottom: 0,
-    width: '72px',
+    width: '90px',
     overflow: 'visible',
   },
 
@@ -410,7 +410,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '72px',
+    width: '100%',
     height: '100%',
   } as React.CSSProperties,
 
@@ -418,7 +418,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '72px',
+    width: '100%',
     background: 'rgba(0,0,0,0.55)',
     pointerEvents: 'none',
     zIndex: 2,
@@ -439,10 +439,10 @@ const styles: Record<string, React.CSSProperties> = {
   metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
   metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
 
-  // 캐릭터 — 암벽 왼쪽 면에 달라붙어서 이동
+  // 캐릭터 — 경사면 위 (삼각형 왼쪽 면에 붙음)
   charWrap: {
     position: 'absolute',
-    right: '30px',             // 암벽(72px) 안쪽 왼쪽 면에 걸침
+    right: '60px',
     bottom: 8,
     display: 'flex',
     flexDirection: 'column',

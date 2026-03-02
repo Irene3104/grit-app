@@ -171,53 +171,55 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
         {/* ===== 암벽 패널 — 화면 오른쪽 끝 고정 ===== */}
         <div style={styles.cliffPanel}>
 
-          {/* 정상 별 */}
-          <div style={styles.summit}>
-            <span style={{ fontSize: '1.1rem' }}>⭐</span>
-            <span style={styles.summitLabel}>정상</span>
-          </div>
-
-          {/* 남은 거리 */}
-          <div style={styles.metersTag}>
-            <span style={styles.metersText}>{metersLeft}m</span>
-            <span style={styles.metersSubText}>남음</span>
-          </div>
-
           {/* 암벽 구역 */}
           <div style={styles.cliffZone} ref={cliffZoneRef}>
-            {/* 암벽 SVG */}
+
+            {/* ── 암벽 SVG: 아래 넓고 위 좁은 삼각형 형태, 밝은 회색 바위 ── */}
             <svg
               style={styles.cliffImg as React.CSSProperties}
-              viewBox="0 0 60 400"
+              viewBox="0 0 80 500"
               preserveAspectRatio="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* 암벽 기본 형태 */}
-              <rect width="60" height="400" fill="#1a1a2e"/>
-              {/* 왼쪽 굴곡진 실루엣 */}
-              <path d="M0,0 L12,0 L8,40 L15,80 L5,120 L18,160 L8,200 L14,240 L4,280 L16,320 L6,360 L12,400 L0,400 Z" fill="#0d0d1a"/>
-              {/* 바위 질감 레이어 */}
-              <path d="M20,30 L35,25 L40,45 L28,50 Z" fill="#252540" opacity="0.8"/>
-              <path d="M10,90 L30,85 L35,110 L12,115 Z" fill="#252540" opacity="0.7"/>
-              <path d="M15,160 L38,155 L42,180 L18,185 Z" fill="#1e1e35" opacity="0.9"/>
-              <path d="M8,230 L32,220 L38,248 L10,252 Z" fill="#252540" opacity="0.7"/>
-              <path d="M18,300 L40,295 L44,318 L20,322 Z" fill="#1e1e35" opacity="0.8"/>
-              <path d="M6,360 L28,355 L32,375 L8,378 Z" fill="#252540" opacity="0.7"/>
-              {/* 균열선 */}
-              <path d="M25,0 Q22,30 28,60 Q24,90 30,120" stroke="#0d0d1a" strokeWidth="1.5" fill="none" opacity="0.9"/>
-              <path d="M35,40 Q38,70 32,100 Q36,130 30,160" stroke="#111128" strokeWidth="1" fill="none" opacity="0.8"/>
-              <path d="M20,180 Q18,210 24,240 Q20,270 26,300" stroke="#0d0d1a" strokeWidth="1.5" fill="none" opacity="0.9"/>
-              {/* 암벽 손잡이(홀드) */}
-              <ellipse cx="30" cy="60"  rx="5" ry="3" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
-              <ellipse cx="20" cy="130" rx="4" ry="2.5" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
-              <ellipse cx="35" cy="200" rx="5" ry="3" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
-              <ellipse cx="22" cy="270" rx="4" ry="2.5" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
-              <ellipse cx="32" cy="340" rx="5" ry="3" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
-              {/* 이끼 */}
-              <ellipse cx="28" cy="100" rx="6" ry="3" fill="#1a3a1a" opacity="0.5"/>
-              <ellipse cx="18" cy="220" rx="5" ry="2.5" fill="#1a3a1a" opacity="0.4"/>
-              <ellipse cx="33" cy="310" rx="6" ry="3" fill="#1a3a1a" opacity="0.5"/>
+              {/* 메인 암벽 형태: 아래(80) → 위(30) */}
+              <polygon points="0,500 80,500 65,0 15,0" fill="#4a4a6a"/>
+              {/* 왼쪽 굴곡 */}
+              <path d="M0,500 L10,400 L4,300 L12,200 L6,100 L15,0 L0,0 Z" fill="#3a3a5a"/>
+              {/* 오른쪽 굴곡 */}
+              <path d="M80,500 L70,400 L76,300 L68,200 L74,100 L65,0 L80,0 Z" fill="#3a3a5a"/>
+              {/* 바위 면 하이라이트 */}
+              <path d="M20,480 L60,480 L56,380 L24,380 Z" fill="#5a5a7a" opacity="0.6"/>
+              <path d="M22,360 L58,360 L54,260 L26,260 Z" fill="#5a5a7a" opacity="0.5"/>
+              <path d="M24,240 L56,240 L52,140 L28,140 Z" fill="#5a5a a" opacity="0.5"/>
+              <path d="M26,120 L54,120 L50,40 L30,40 Z"  fill="#6060 0" opacity="0.4"/>
+              {/* 균열 */}
+              <path d="M35,500 Q32,420 38,340 Q34,260 40,180 Q36,100 42,20"
+                    stroke="#2e2e4e" strokeWidth="2" fill="none" opacity="0.8"/>
+              <path d="M50,500 Q54,430 48,350 Q52,270 46,190"
+                    stroke="#2e2e4e" strokeWidth="1.5" fill="none" opacity="0.6"/>
+              {/* 홀드 (손잡이) — 밝게! */}
+              <ellipse cx="35" cy="450" rx="7" ry="4" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
+              <ellipse cx="52" cy="380" rx="6" ry="3.5" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
+              <ellipse cx="30" cy="300" rx="7" ry="4" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
+              <ellipse cx="50" cy="220" rx="6" ry="3.5" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
+              <ellipse cx="33" cy="140" rx="6" ry="3.5" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
+              <ellipse cx="47" cy="70"  rx="5" ry="3"   fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
+              {/* 이끼/물기 */}
+              <ellipse cx="38" cy="340" rx="8" ry="4" fill="#2d6a2d" opacity="0.5"/>
+              <ellipse cx="45" cy="190" rx="7" ry="3.5" fill="#2d6a2d" opacity="0.4"/>
             </svg>
+
+            {/* 정상 표시 — 암벽 상단에 */}
+            <div style={styles.summit}>
+              <span style={{ fontSize: '1.2rem' }}>⭐</span>
+              <span style={styles.summitLabel}>정상</span>
+            </div>
+
+            {/* 남은 거리 — 정상 바로 아래 */}
+            <div style={styles.metersTag}>
+              <span style={styles.metersText}>{metersLeft}m</span>
+              <span style={styles.metersSubText}>남음</span>
+            </div>
 
             {/* 미완료 구간 어두운 오버레이 */}
             <motion.div
@@ -325,17 +327,20 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'visible',
   },
 
+  // 정상 — cliffZone 안, 상단 중앙
   summit: {
     position: 'absolute',
-    top: '60px',               // 헤더 아래
-    right: '10px',
+    top: '4px',
+    left: '50%',
+    transform: 'translateX(-50%)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '0.1rem',
     zIndex: 25,
+    whiteSpace: 'nowrap',
   },
-  summitLabel: { color: '#ffffff80', fontSize: '0.65rem' },
+  summitLabel: { color: '#ffffffcc', fontSize: '0.6rem', fontWeight: '600' },
 
   // 암벽 이미지 — 오른쪽 끝에 딱 붙어서 세로 전체
   cliffZone: {
@@ -343,7 +348,7 @@ const styles: Record<string, React.CSSProperties> = {
     top: 0,
     right: 0,
     bottom: 0,
-    width: '60px',
+    width: '72px',
     overflow: 'visible',
   },
 
@@ -351,40 +356,40 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '60px',
+    width: '72px',
     height: '100%',
-    objectFit: 'cover',
-    objectPosition: '35% top',
   } as React.CSSProperties,
 
   progressOverlay: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: '60px',
-    background: 'rgba(0,0,0,0.65)',
+    width: '72px',
+    background: 'rgba(0,0,0,0.55)',
     pointerEvents: 'none',
     zIndex: 2,
   },
 
+  // 남은 거리 — 정상 별 바로 아래
   metersTag: {
     position: 'absolute',
-    top: '70px',               // 헤더 아래 여백
-    right: '0',
-    width: '60px',
+    top: '46px',
+    left: '50%',
+    transform: 'translateX(-50%)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     zIndex: 5,
+    whiteSpace: 'nowrap',
   },
   metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
   metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
 
-  // 캐릭터 — 암벽 왼쪽 면에 붙어서 픽셀 단위로 이동
+  // 캐릭터 — 암벽 왼쪽 면에 붙어서 이동
   charWrap: {
     position: 'absolute',
-    right: '48px',             // 암벽(60px) 왼쪽으로 튀어나옴
-    bottom: 8,                 // 초기값 (픽셀) — animate로 덮어씀
+    right: '52px',             // 암벽(72px) 왼쪽 면
+    bottom: 8,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

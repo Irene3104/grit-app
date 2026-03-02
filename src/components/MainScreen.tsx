@@ -301,11 +301,11 @@ const styles: Record<string, React.CSSProperties> = {
   todoList: { display: 'flex', flexDirection: 'column', gap: '0.7rem' },
   todoItem: { display: 'flex', alignItems: 'center', gap: '0.7rem' },
   checkbox: {
-    width: '20px', height: '20px', borderRadius: '5px', border: '2px solid #ffffff40',
+    width: '22px', height: '22px', borderRadius: '6px', border: '2px solid #ffffff40',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '0.7rem', color: '#000', flexShrink: 0, cursor: 'pointer', transition: 'all 0.2s',
+    fontSize: '0.85rem', color: '#000000', flexShrink: 0, cursor: 'pointer', transition: 'all 0.2s',
   },
-  checkboxDone: { background: '#ffffff', border: '2px solid #ffffff' },
+  checkboxDone: { background: '#4ade80', border: '2px solid #4ade80', color: '#000000' },
   todoText: { color: '#ffffff', fontSize: '0.95rem', flex: 1, cursor: 'pointer' },
   todoTextDone: { textDecoration: 'line-through', color: '#ffffff35' },
   timerIcon: { color: '#ffffff30', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 },
@@ -389,10 +389,10 @@ const styles: Record<string, React.CSSProperties> = {
   metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
   metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
 
-  // 캐릭터 — 암벽 왼쪽 면에 붙어서 이동
+  // 캐릭터 — 암벽 왼쪽 면에 달라붙어서 이동
   charWrap: {
     position: 'absolute',
-    right: '52px',             // 암벽(72px) 왼쪽 면
+    right: '30px',             // 암벽(72px) 안쪽 왼쪽 면에 걸침
     bottom: 8,
     display: 'flex',
     flexDirection: 'column',

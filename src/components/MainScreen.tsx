@@ -183,39 +183,59 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           {/* 암벽 구역 */}
           <div style={styles.cliffZone} ref={cliffZoneRef}>
 
-            {/* ── 암벽 SVG: 아래 넓고 위 좁은 삼각형 형태, 밝은 회색 바위 ── */}
+            {/* ── 암벽 SVG: 직각삼각형 + 울퉁불퉁 왼쪽 면 ── */}
             <svg
               style={styles.cliffImg as React.CSSProperties}
               viewBox="0 0 80 500"
               preserveAspectRatio="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              {/* 메인 암벽 형태: 아래(80) → 위(30) */}
-              <polygon points="0,500 80,500 65,0 15,0" fill="#4a4a6a"/>
-              {/* 왼쪽 굴곡 */}
-              <path d="M0,500 L10,400 L4,300 L12,200 L6,100 L15,0 L0,0 Z" fill="#3a3a5a"/>
-              {/* 오른쪽 굴곡 */}
-              <path d="M80,500 L70,400 L76,300 L68,200 L74,100 L65,0 L80,0 Z" fill="#3a3a5a"/>
-              {/* 바위 면 하이라이트 */}
-              <path d="M20,480 L60,480 L56,380 L24,380 Z" fill="#5a5a7a" opacity="0.6"/>
-              <path d="M22,360 L58,360 L54,260 L26,260 Z" fill="#5a5a7a" opacity="0.5"/>
-              <path d="M24,240 L56,240 L52,140 L28,140 Z" fill="#5a5a a" opacity="0.5"/>
-              <path d="M26,120 L54,120 L50,40 L30,40 Z"  fill="#6060 0" opacity="0.4"/>
-              {/* 균열 */}
-              <path d="M35,500 Q32,420 38,340 Q34,260 40,180 Q36,100 42,20"
-                    stroke="#2e2e4e" strokeWidth="2" fill="none" opacity="0.8"/>
-              <path d="M50,500 Q54,430 48,350 Q52,270 46,190"
-                    stroke="#2e2e4e" strokeWidth="1.5" fill="none" opacity="0.6"/>
-              {/* 홀드 (손잡이) — 밝게! */}
-              <ellipse cx="35" cy="450" rx="7" ry="4" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
-              <ellipse cx="52" cy="380" rx="6" ry="3.5" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
-              <ellipse cx="30" cy="300" rx="7" ry="4" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
-              <ellipse cx="50" cy="220" rx="6" ry="3.5" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
-              <ellipse cx="33" cy="140" rx="6" ry="3.5" fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
-              <ellipse cx="47" cy="70"  rx="5" ry="3"   fill="#7878a8" stroke="#9898c8" strokeWidth="1"/>
-              {/* 이끼/물기 */}
-              <ellipse cx="38" cy="340" rx="8" ry="4" fill="#2d6a2d" opacity="0.5"/>
-              <ellipse cx="45" cy="190" rx="7" ry="3.5" fill="#2d6a2d" opacity="0.4"/>
+              {/* 직각삼각형 기본형: 오른쪽 직각, 왼쪽이 경사면 */}
+              {/* 바닥 오른쪽(80,500) → 꼭대기 오른쪽(80,0) → 꼭대기 왼쪽(20,0) */}
+              <polygon points="80,500 80,0 18,0" fill="#3a3d52"/>
+
+              {/* 울퉁불퉁한 왼쪽 경사면 (캐릭터가 오르는 면) */}
+              <path d="
+                M18,0
+                L22,30  L14,55
+                L24,80  L12,110
+                L20,135 L10,160
+                L22,185 L14,215
+                L26,240 L16,265
+                L24,290 L12,318
+                L22,345 L14,370
+                L26,395 L16,420
+                L24,448 L18,475
+                L20,500 L80,500 L80,0 Z
+              " fill="#464966"/>
+
+              {/* 경사면 암석 돌출부 (울퉁불퉁 강조) */}
+              <path d="M14,55  L4,65  L14,72"  fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
+              <path d="M10,160 L2,172 L12,180" fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
+              <path d="M12,318 L2,330 L14,338" fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
+              <path d="M14,370 L4,382 L16,390" fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
+
+              {/* 바위 면 레이어감 */}
+              <path d="M40,500 L80,500 L80,350 L50,350 Z" fill="#404360" opacity="0.5"/>
+              <path d="M50,340 L80,340 L80,180 L60,180 Z" fill="#404360" opacity="0.4"/>
+              <path d="M60,170 L80,170 L80,60  L68,60  Z" fill="#3a3d52" opacity="0.6"/>
+
+              {/* 수직 균열선 */}
+              <path d="M60,500 Q57,420 62,340 Q58,260 63,180 Q59,100 64,20"
+                    stroke="#2d3045" strokeWidth="1.5" fill="none" opacity="0.7"/>
+              <path d="M72,500 Q70,400 73,300 Q71,200 74,100"
+                    stroke="#2d3045" strokeWidth="1" fill="none" opacity="0.5"/>
+
+              {/* 홀드 — 경사면 위에 */}
+              <ellipse cx="20" cy="60"  rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
+              <ellipse cx="16" cy="155" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
+              <ellipse cx="20" cy="255" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
+              <ellipse cx="16" cy="350" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
+              <ellipse cx="20" cy="445" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
+
+              {/* 이끼 */}
+              <ellipse cx="25" cy="200" rx="7" ry="3" fill="#2d5a2d" opacity="0.5"/>
+              <ellipse cx="22" cy="380" rx="6" ry="2.5" fill="#2d5a2d" opacity="0.4"/>
             </svg>
 
             {/* 정상 표시 — 암벽 상단에 */}

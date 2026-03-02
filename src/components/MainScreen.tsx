@@ -5,6 +5,7 @@ import { useGameEngine } from '../hooks/useGameEngine';
 import GameOver from './GameOver';
 import Success from './Success';
 import PomodoroModal from './PomodoroModal';
+import ClimbingCat from './ClimbingCat';
 
 interface Props {
   data: GritData;
@@ -12,28 +13,9 @@ interface Props {
   onNewGoal: () => void;
 }
 
-// 등반 스프라이트 프레임 (cat 기준)
-const CLIMB_FRAMES: Record<string, string[]> = {
-  cat: [
-    '/characters/cat-climb-f1.png',
-    '/characters/cat-climb-f2.png',
-    '/characters/cat-climb-f3.png',
-  ],
-  tiger: ['/characters/tiger.png'],
-  capybara: ['/characters/capybara.png'],
-  kangaroo: ['/characters/kangaroo.png'],
-  koala: ['/characters/koala.png'],
-};
+// (스프라이트 이미지 → ClimbingCat SVG 컴포넌트로 대체)
 
-// 상태별 이미지
-const STATE_IMG: Record<string, Record<string, string>> = {
-  cat: {
-    danger: '/characters/cat-danger.png',
-    fall:   '/characters/cat-fall.png',
-    success: '/characters/cat-success.png',
-    profile: '/characters/cat-profile-clean.png',
-  },
-};
+// (상태별 이미지는 ClimbingCat SVG로 대체됨)
 
 const DURATION_LABEL: Record<string, string> = {
   '1day': '하루',
@@ -57,15 +39,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [showSuccess, setShowSuccess] = useState(false);
 
   // 스프라이트 프레임 전환
-  const frames = CLIMB_FRAMES[data.character] ?? CLIMB_FRAMES['tiger'];
-  const [frameIdx, setFrameIdx] = useState(0);
-  useEffect(() => {
-    if (frames.length <= 1) return;
-    const interval = setInterval(() => {
-      setFrameIdx(i => (i + 1) % frames.length);
-    }, 400);
-    return () => clearInterval(interval);
-  }, [frames.length]);
+  // ClimbingCat SVG 컴포넌트가 자체 애니메이션 처리
 
   const {
     lives, progress, slipping, oneHandMode, timeLeftMs,
@@ -211,8 +185,39 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
 
           {/* 암벽 구역 */}
           <div style={styles.cliffZone} ref={cliffZoneRef}>
-            {/* 암벽 이미지 */}
-            <img src="/cliff-wall.png" alt="cliff" style={styles.cliffImg} />
+            {/* 암벽 SVG */}
+            <svg
+              style={styles.cliffImg as React.CSSProperties}
+              viewBox="0 0 60 400"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* 암벽 기본 형태 */}
+              <rect width="60" height="400" fill="#1a1a2e"/>
+              {/* 왼쪽 굴곡진 실루엣 */}
+              <path d="M0,0 L12,0 L8,40 L15,80 L5,120 L18,160 L8,200 L14,240 L4,280 L16,320 L6,360 L12,400 L0,400 Z" fill="#0d0d1a"/>
+              {/* 바위 질감 레이어 */}
+              <path d="M20,30 L35,25 L40,45 L28,50 Z" fill="#252540" opacity="0.8"/>
+              <path d="M10,90 L30,85 L35,110 L12,115 Z" fill="#252540" opacity="0.7"/>
+              <path d="M15,160 L38,155 L42,180 L18,185 Z" fill="#1e1e35" opacity="0.9"/>
+              <path d="M8,230 L32,220 L38,248 L10,252 Z" fill="#252540" opacity="0.7"/>
+              <path d="M18,300 L40,295 L44,318 L20,322 Z" fill="#1e1e35" opacity="0.8"/>
+              <path d="M6,360 L28,355 L32,375 L8,378 Z" fill="#252540" opacity="0.7"/>
+              {/* 균열선 */}
+              <path d="M25,0 Q22,30 28,60 Q24,90 30,120" stroke="#0d0d1a" strokeWidth="1.5" fill="none" opacity="0.9"/>
+              <path d="M35,40 Q38,70 32,100 Q36,130 30,160" stroke="#111128" strokeWidth="1" fill="none" opacity="0.8"/>
+              <path d="M20,180 Q18,210 24,240 Q20,270 26,300" stroke="#0d0d1a" strokeWidth="1.5" fill="none" opacity="0.9"/>
+              {/* 암벽 손잡이(홀드) */}
+              <ellipse cx="30" cy="60"  rx="5" ry="3" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
+              <ellipse cx="20" cy="130" rx="4" ry="2.5" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
+              <ellipse cx="35" cy="200" rx="5" ry="3" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
+              <ellipse cx="22" cy="270" rx="4" ry="2.5" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
+              <ellipse cx="32" cy="340" rx="5" ry="3" fill="#2d2d4e" stroke="#3a3a5e" strokeWidth="0.5"/>
+              {/* 이끼 */}
+              <ellipse cx="28" cy="100" rx="6" ry="3" fill="#1a3a1a" opacity="0.5"/>
+              <ellipse cx="18" cy="220" rx="5" ry="2.5" fill="#1a3a1a" opacity="0.4"/>
+              <ellipse cx="33" cy="310" rx="6" ry="3" fill="#1a3a1a" opacity="0.5"/>
+            </svg>
 
             {/* 미완료 구간 어두운 오버레이 */}
             <motion.div
@@ -221,39 +226,21 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
 
-            {/* 캐릭터 — 암벽 왼쪽 면, 할일 완료에 따라 위로 이동 */}
+            {/* 캐릭터 — 할일 완료에 따라 위로 이동 */}
             <motion.div
-              style={styles.charWrap}
-              animate={{ bottom: charBottomPx }}
+              style={{
+                ...styles.charWrap,
+                filter: slipping ? 'drop-shadow(0 0 10px #ff4444)' : undefined,
+              }}
+              animate={{
+                bottom: charBottomPx,
+                x: slipping ? [-6, 6, -4, 4, 0] : 0,
+              }}
               transition={{ duration: 1.0, ease: 'easeOut' }}
             >
-              <motion.img
-                src={
-                  oneHandMode && STATE_IMG[data.character]?.danger
-                    ? STATE_IMG[data.character].danger
-                    : frames[frameIdx]
-                }
-                alt="character"
-                style={{
-                  ...styles.charImg,
-                  filter: slipping
-                    ? 'drop-shadow(0 0 10px #ff4444)'
-                    : oneHandMode
-                    ? 'drop-shadow(0 0 8px #ffaa00)'
-                    : 'drop-shadow(0 0 8px rgba(255,255,255,0.5))',
-                }}
-                animate={
-                  slipping
-                    ? { x: [-6, 6, -4, 4, 0], y: [0, 8, 2], rotate: [-10, 10, 0] }
-                    : oneHandMode
-                    ? { x: [0, -5, 0, -5, 0], rotate: [-14, -8, -14], y: [0, 5, 0] }
-                    : { x: [-2, 2, -3, 3, -2, 0], y: [0, -3, -1, -5, -2, 0], rotate: [-3, 3, -4, 4, 0] }
-                }
-                transition={
-                  slipping ? { duration: 0.5 }
-                  : oneHandMode ? { duration: 0.5, repeat: Infinity, ease: 'easeInOut' }
-                  : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
-                }
+              <ClimbingCat
+                state={slipping ? 'danger' : oneHandMode ? 'danger' : 'climbing'}
+                size={64}
               />
               {oneHandMode && (
                 <motion.div

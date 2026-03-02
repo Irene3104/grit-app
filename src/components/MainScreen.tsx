@@ -284,64 +284,75 @@ const styles: Record<string, React.CSSProperties> = {
   todoText: { color: '#ffffff', fontSize: '0.95rem', flex: 1, cursor: 'pointer' },
   todoTextDone: { textDecoration: 'line-through', color: '#ffffff35' },
   timerIcon: { color: '#ffffff30', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 },
-  // 절벽
+  // 절벽 — 오른쪽 컬럼 전체
   right: {
-    width: '120px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-    paddingTop: '0.5rem', paddingBottom: '0.5rem', position: 'relative',
+    width: '90px',
+    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingTop: '0.5rem',
+    paddingBottom: '0.5rem',
+    position: 'relative',
+    overflow: 'visible',
   },
   summit: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', marginBottom: '0.4rem' },
   summitLabel: { color: '#ffffff80', fontSize: '0.7rem' },
 
-  // 암벽 래퍼 — 이미지 + 캐릭터 겹치는 컨테이너
+  // 암벽 래퍼 — flex 1로 세로 꽉 채움
   cliffWrap: {
     flex: 1,
-    width: '70px',        // 암벽 너비
+    width: '50px',
     position: 'relative',
-    overflow: 'visible',  // 캐릭터가 왼쪽으로 튀어나와야 함
+    overflow: 'visible',
   },
 
-  // 암벽 이미지 — 세로 가득 채움
+  // 암벽 이미지 — 래퍼 전체를 채우되 오른쪽 절반만 크롭
   cliffImg: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    width: '100%',
+    left: '-10px',        // 왼쪽으로 조금 당겨서 바위 질감이 보이게
+    width: '70px',
     height: '100%',
     objectFit: 'cover',
-    objectPosition: 'center top',
-    borderRadius: '6px 6px 0 0',
+    objectPosition: '30% top', // 암벽 왼쪽 면 위주로
   } as React.CSSProperties,
 
-  // 진행 안된 부분 어둡게 (위에서 내려오는 어두운 오버레이)
+  // 위쪽(미완료 구간) 어둡게
   progressOverlay: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    width: '100%',
-    background: 'rgba(0,0,0,0.65)',
-    borderRadius: '6px 6px 0 0',
+    left: '-10px',
+    width: '70px',
+    background: 'rgba(0,0,0,0.6)',
     pointerEvents: 'none',
     zIndex: 2,
   },
 
   metersTag: {
-    position: 'absolute', top: '8px', left: '50%',
+    position: 'absolute',
+    top: '6px',
+    left: '50%',
     transform: 'translateX(-50%)',
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     zIndex: 5,
+    whiteSpace: 'nowrap',
   },
-  metersText: { color: '#ffffff', fontSize: '0.85rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
-  metersSubText: { color: '#ffffff80', fontSize: '0.6rem' },
+  metersText: { color: '#ffffff', fontSize: '0.8rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
+  metersSubText: { color: '#ffffff80', fontSize: '0.58rem' },
 
-  // 캐릭터 — 암벽 왼쪽 면에 달라붙음
+  // 캐릭터 — 암벽 왼쪽 바깥에 달라붙음
   charWrap: {
     position: 'absolute',
-    left: '-30px',         // 암벽 왼쪽으로 튀어나옴
-    transform: 'translateX(0)',
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    left: '-38px',        // 암벽 왼쪽으로 튀어나옴
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     zIndex: 10,
   },
-  charImg: { width: '72px', height: '72px', objectFit: 'contain' } as React.CSSProperties,
-  dangerBadge: { fontSize: '0.85rem', marginTop: '-6px' },
+  charImg: { width: '64px', height: '64px', objectFit: 'contain' } as React.CSSProperties,
+  dangerBadge: { fontSize: '0.85rem', marginTop: '-4px' },
   ground: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem 0' },
 };

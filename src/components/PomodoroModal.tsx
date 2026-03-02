@@ -16,6 +16,8 @@ const PRESETS = [
 ];
 
 export default function PomodoroModal({ todoText, onClose, onComplete }: Props) {
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
   const [customMin, setCustomMin] = useState('25');
   const [customSec, setCustomSec] = useState('00');
   const [selectedPreset, setSelectedPreset] = useState<number | null>(25);
@@ -54,8 +56,8 @@ export default function PomodoroModal({ todoText, onClose, onComplete }: Props) 
           osc.stop(startT + 0.35);
         }
       } catch {}
-      // 즉시 완료 콜백 (모달 닫히기 전에)
-      onComplete?.();
+      // ref 통해 항상 최신 onComplete 호출
+      onCompleteRef.current?.();
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [running, secondsLeft]);

@@ -37,6 +37,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [pomodoroTodo, setPomodoroTodo] = useState<{ text: string; id: string } | null>(null);
   const pomodoroTodoRef = useRef<{ text: string; id: string } | null>(null);
   pomodoroTodoRef.current = pomodoroTodo; // 항상 최신값 유지
+  const toggleTodoRef = useRef<(id: string) => void>(() => {});
   const [showSuccess, setShowSuccess] = useState(false);
 
   // 스프라이트 프레임 전환
@@ -52,6 +53,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
     lives, progress, slipping, oneHandMode, timeLeftMs,
     metersLeft, isDead, isSuccess, toggleTodo, completedCount, totalCount,
   } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod);
+  toggleTodoRef.current = toggleTodo; // 항상 최신 toggleTodo 유지
 
   const isUrgent = timeLeftMs <= 2 * 60 * 60 * 1000 && completedCount < totalCount;
   const isCritical = timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
@@ -288,8 +290,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
             onComplete={() => {
                 const current = pomodoroTodoRef.current;
                 if (current) {
-                  toggleTodo(current.id);
-                  // 1.8초 후 모달 닫기
+                  toggleTodoRef.current(current.id);
                   setTimeout(() => setPomodoroTodo(null), 1800);
                 }
               }}

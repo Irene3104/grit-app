@@ -120,16 +120,14 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
 
       {/* ===== 메인 영역 ===== */}
       <div style={styles.mainArea}>
-        {/* 왼쪽: TODO */}
+        {/* 왼쪽: TODO — 오른쪽 암벽 너비만큼 패딩 확보 */}
         <div style={styles.left}>
-          {/* 목표 — 정상 별과 같은 높이 */}
           <p style={styles.goalText}>{data.goal}</p>
           <p style={styles.durationText}>{durationLabel} 목표</p>
           <p style={styles.progressLabel}>{completedCount}/{totalCount} 완료</p>
           <div style={styles.todoList}>
             {todos.map((todo) => (
               <div key={todo.id} style={styles.todoItem}>
-                {/* 체크박스 */}
                 <motion.div
                   style={{ ...styles.checkbox, ...(todo.completed ? styles.checkboxDone : {}) }}
                   animate={todo.completed ? { scale: [1, 1.3, 1] } : {}}
@@ -138,14 +136,12 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 >
                   {todo.completed && '✓'}
                 </motion.div>
-                {/* 할일 텍스트 — 클릭 시 포모도로 */}
                 <span
                   style={{ ...styles.todoText, ...(todo.completed ? styles.todoTextDone : {}) }}
                   onClick={() => !todo.completed && setPomodoroTodo(todo.text)}
                 >
                   {todo.text}
                 </span>
-                {/* 타이머 아이콘 힌트 */}
                 {!todo.completed && (
                   <span style={styles.timerIcon} onClick={() => setPomodoroTodo(todo.text)}>⏲</span>
                 )}
@@ -154,38 +150,35 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           </div>
         </div>
 
-        {/* 오른쪽: 절벽 */}
-        <div style={styles.right}>
-          {/* 정상 배지 */}
+        {/* ===== 암벽 패널 — 화면 오른쪽 끝에 absolute 고정 ===== */}
+        <div style={styles.cliffPanel}>
+
+          {/* 정상 */}
           <div style={styles.summit}>
-            <span style={{ fontSize: '1.2rem' }}>⭐</span>
+            <span style={{ fontSize: '1.1rem' }}>⭐</span>
             <span style={styles.summitLabel}>정상</span>
           </div>
 
-          {/* 암벽 + 캐릭터 래퍼 */}
-          <div style={styles.cliffWrap}>
+          {/* 암벽 구역 (이미지 + 오버레이 + 캐릭터) */}
+          <div style={styles.cliffZone}>
 
-            {/* 남은 거리 태그 */}
-            <div style={styles.metersTag}>
-              <span style={styles.metersText}>{metersLeft}m</span>
-              <span style={styles.metersSubText}>남음</span>
-            </div>
+            {/* 암벽 이미지 — 오른쪽 끝에 딱 붙음 */}
+            <img src="/cliff-wall.png" alt="cliff" style={styles.cliffImg} />
 
-            {/* 암벽 이미지 */}
-            <img
-              src="/cliff-wall.png"
-              alt="cliff"
-              style={styles.cliffImg}
-            />
-
-            {/* 진행도 오버레이 (암벽 위에 어두운 마스크 — 위쪽은 어둡고 완료 부분은 밝아짐) */}
+            {/* 미완료 구간 어두운 오버레이 (위에서 내려옴) */}
             <motion.div
               style={styles.progressOverlay}
               animate={{ height: `${(1 - progress) * 100}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
 
-            {/* 캐릭터 — 암벽 왼쪽 테두리에 매달림 */}
+            {/* 남은 거리 */}
+            <div style={styles.metersTag}>
+              <span style={styles.metersText}>{metersLeft}m</span>
+              <span style={styles.metersSubText}>남음</span>
+            </div>
+
+            {/* 캐릭터 — 암벽 왼쪽 면에 매달림, 진행도에 따라 위로 이동 */}
             <motion.div
               style={styles.charWrap}
               animate={{ bottom: `${charBottom}%` }}
@@ -197,29 +190,22 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 style={{
                   ...styles.charImg,
                   filter: slipping
-                    ? 'drop-shadow(0 0 10px #ff4444) drop-shadow(0 0 4px #ff0000)'
+                    ? 'drop-shadow(0 0 10px #ff4444)'
                     : oneHandMode
-                    ? 'drop-shadow(0 0 8px #ffaa00) drop-shadow(0 0 3px #ff8800)'
-                    : 'drop-shadow(0 0 8px rgba(255,255,255,0.5))',
+                    ? 'drop-shadow(0 0 8px #ffaa00)'
+                    : 'drop-shadow(0 0 6px rgba(255,255,255,0.4))',
                 }}
                 animate={
                   slipping
                     ? { x: [-6, 6, -4, 4, 0], y: [0, 8, 2], rotate: [-10, 10, 0] }
                     : oneHandMode
-                    ? { x: [0, -4, 0, -4, 0], rotate: [-12, -8, -12], y: [0, 4, 0] }
-                    : {
-                        // 자연스러운 등반 — 왼손/오른손 번갈아 느낌
-                        x: [-2, 2, -3, 3, -2, 2, 0],
-                        y: [0, -3, -1, -5, -2, -4, 0],
-                        rotate: [-3, 3, -4, 4, -2, 2, 0],
-                      }
+                    ? { x: [0, -5, 0, -5, 0], rotate: [-14, -8, -14], y: [0, 5, 0] }
+                    : { x: [-2, 2, -3, 3, -2, 0], y: [0, -3, -1, -5, -2, 0], rotate: [-3, 3, -4, 4, 0] }
                 }
                 transition={
-                  slipping
-                    ? { duration: 0.5 }
-                    : oneHandMode
-                    ? { duration: 0.5, repeat: Infinity, ease: 'easeInOut' }
-                    : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
+                  slipping ? { duration: 0.5 }
+                  : oneHandMode ? { duration: 0.5, repeat: Infinity, ease: 'easeInOut' }
+                  : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
                 }
               />
               {oneHandMode && (
@@ -268,8 +254,7 @@ const styles: Record<string, React.CSSProperties> = {
   timer: { fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', fontVariantNumeric: 'tabular-nums' },
   timerUrgent: { color: '#ff6666' },
   // 메인
-  mainArea: { display: 'flex', flex: 1 },
-  left: { flex: 1, padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
+  mainArea: { display: 'flex', flex: 1, position: 'relative' },
   goalText: { fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', lineHeight: 1.3 },
   durationText: { fontSize: '0.8rem', color: '#ffffff40', marginBottom: '0.2rem' },
   progressLabel: { color: '#ffffff80', fontSize: '0.9rem', fontWeight: '600' },
@@ -284,47 +269,69 @@ const styles: Record<string, React.CSSProperties> = {
   todoText: { color: '#ffffff', fontSize: '0.95rem', flex: 1, cursor: 'pointer' },
   todoTextDone: { textDecoration: 'line-through', color: '#ffffff35' },
   timerIcon: { color: '#ffffff30', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 },
-  // 절벽 — 오른쪽 컬럼 전체
-  right: {
-    width: '90px',
-    flexShrink: 0,
+  // 왼쪽 할일 영역 — 오른쪽 암벽 너비(80px) 피해서
+  left: {
+    flex: 1,
+    padding: '1rem 1.2rem',
+    paddingRight: '0.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.6rem',
+    minWidth: 0,
+  },
+
+  // ===== 암벽 패널 — 화면 오른쪽 끝에 absolute 고정 =====
+  cliffPanel: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '72px',              // 암벽 너비
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',     // 오른쪽 끝 정렬
+    paddingTop: '3.5rem',       // 헤더 높이만큼
+    paddingBottom: '0.5rem',
+    overflow: 'visible',        // 캐릭터 왼쪽 삐져나옴 허용
+    zIndex: 20,
+  },
+
+  summit: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    paddingTop: '0.5rem',
-    paddingBottom: '0.5rem',
-    position: 'relative',
-    overflow: 'visible',
+    gap: '0.15rem',
+    marginBottom: '0.3rem',
+    marginRight: '8px',
   },
-  summit: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', marginBottom: '0.4rem' },
-  summitLabel: { color: '#ffffff80', fontSize: '0.7rem' },
+  summitLabel: { color: '#ffffff80', fontSize: '0.65rem' },
 
-  // 암벽 래퍼 — flex 1로 세로 꽉 채움
-  cliffWrap: {
+  // 암벽 이미지 + 캐릭터를 감싸는 컨테이너
+  cliffZone: {
     flex: 1,
-    width: '50px',
+    width: '56px',              // 암벽 실제 너비
     position: 'relative',
     overflow: 'visible',
   },
 
-  // 암벽 이미지 — 래퍼 전체를 채우되 오른쪽 절반만 크롭
+  // 암벽 이미지 — 세로 꽉 채움, 오른쪽 끝 고정
   cliffImg: {
     position: 'absolute',
     top: 0,
-    left: '-10px',        // 왼쪽으로 조금 당겨서 바위 질감이 보이게
-    width: '70px',
+    right: 0,
+    width: '56px',
     height: '100%',
     objectFit: 'cover',
-    objectPosition: '30% top', // 암벽 왼쪽 면 위주로
+    objectPosition: '40% top',
   } as React.CSSProperties,
 
-  // 위쪽(미완료 구간) 어둡게
+  // 미완료 구간 어두운 오버레이
   progressOverlay: {
     position: 'absolute',
     top: 0,
-    left: '-10px',
-    width: '70px',
-    background: 'rgba(0,0,0,0.6)',
+    right: 0,
+    width: '56px',
+    background: 'rgba(0,0,0,0.65)',
     pointerEvents: 'none',
     zIndex: 2,
   },
@@ -332,27 +339,32 @@ const styles: Record<string, React.CSSProperties> = {
   metersTag: {
     position: 'absolute',
     top: '6px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    right: '0',
+    width: '56px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     zIndex: 5,
-    whiteSpace: 'nowrap',
   },
-  metersText: { color: '#ffffff', fontSize: '0.8rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
-  metersSubText: { color: '#ffffff80', fontSize: '0.58rem' },
+  metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
+  metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
 
-  // 캐릭터 — 암벽 왼쪽 바깥에 달라붙음
+  // 캐릭터 — 암벽 왼쪽 면에 매달림
   charWrap: {
     position: 'absolute',
-    left: '-38px',        // 암벽 왼쪽으로 튀어나옴
+    right: '36px',              // 암벽(56px) 왼쪽으로 튀어나옴
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     zIndex: 10,
   },
-  charImg: { width: '64px', height: '64px', objectFit: 'contain' } as React.CSSProperties,
-  dangerBadge: { fontSize: '0.85rem', marginTop: '-4px' },
-  ground: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem 0' },
+  charImg: { width: '60px', height: '60px', objectFit: 'contain' } as React.CSSProperties,
+  dangerBadge: { fontSize: '0.8rem', marginTop: '-4px' },
+  ground: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '56px',
+    padding: '0.3rem 0',
+  },
 };

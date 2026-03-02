@@ -5,7 +5,6 @@ import { useGameEngine } from '../hooks/useGameEngine';
 import GameOver from './GameOver';
 import Success from './Success';
 import PomodoroModal from './PomodoroModal';
-import ClimbingCat from './ClimbingCat';
 
 interface Props {
   data: GritData;
@@ -41,7 +40,13 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [showSuccess, setShowSuccess] = useState(false);
 
   // 스프라이트 프레임 전환
-  // ClimbingCat SVG 컴포넌트가 자체 애니메이션 처리
+  // 등반 프레임 교체 (같은 얼굴 고양이)
+  const wallFrames = ['/characters/cat-wall-1.png', '/characters/cat-wall-2.png', '/characters/cat-wall-3.png'];
+  const [frameIdx, setFrameIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setFrameIdx(i => (i + 1) % wallFrames.length), 450);
+    return () => clearInterval(id);
+  }, []);
 
   const {
     lives, progress, slipping, oneHandMode, timeLeftMs,
@@ -242,9 +247,19 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
               }}
               transition={{ duration: 1.0, ease: 'easeOut' }}
             >
-              <ClimbingCat
-                state={slipping ? 'danger' : oneHandMode ? 'danger' : 'climbing'}
-                size={64}
+              <motion.img
+                src={wallFrames[frameIdx]}
+                alt="cat climbing"
+                style={{
+                  width: '72px',
+                  height: '72px',
+                  objectFit: 'contain',
+                  filter: slipping
+                    ? 'drop-shadow(0 0 8px #ff4444)'
+                    : oneHandMode
+                    ? 'drop-shadow(0 0 6px #ffaa00)'
+                    : 'drop-shadow(0 0 4px rgba(255,255,255,0.3))',
+                }}
               />
               {oneHandMode && (
                 <motion.div

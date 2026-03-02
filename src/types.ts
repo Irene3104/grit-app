@@ -1,4 +1,4 @@
-export type Character = 'tiger' | 'capybara' | 'kangaroo' | 'koala';
+export type Character = 'tiger' | 'capybara' | 'kangaroo' | 'koala' | 'cat';
 
 export interface TodoItem {
   id: string;

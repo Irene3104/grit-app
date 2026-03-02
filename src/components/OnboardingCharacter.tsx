@@ -7,11 +7,12 @@ interface Props {
   onBack: () => void;
 }
 
-const CHARACTERS: { id: Character; name: string; desc: string }[] = [
-  { id: 'tiger', name: '호랑이', desc: '불굴의 의지' },
+const CHARACTERS: { id: Character; name: string; desc: string; img?: string }[] = [
+  { id: 'cat',      name: '고양이', desc: '겁없는 클라이머', img: '/characters/cat-profile-clean.png' },
+  { id: 'tiger',    name: '호랑이', desc: '불굴의 의지' },
   { id: 'capybara', name: '카피바라', desc: '여유로운 현자' },
   { id: 'kangaroo', name: '캥거루', desc: '에너지 폭발' },
-  { id: 'koala', name: '코알라', desc: '귀엽고 집요한' },
+  { id: 'koala',    name: '코알라', desc: '귀엽고 집요한' },
 ];
 
 export default function OnboardingCharacter({ onNext, onBack }: Props) {
@@ -32,7 +33,7 @@ export default function OnboardingCharacter({ onNext, onBack }: Props) {
             onClick={() => setSelected(c.id)}
           >
             <img
-              src={`/characters/${c.id}.png`}
+              src={c.img ?? `/characters/${c.id}.png`}
               alt={c.name}
               style={styles.charImg}
             />
@@ -60,7 +61,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#ffffff60', fontSize: '1rem', cursor: 'pointer',
   },
   label: { fontSize: '1.6rem', fontWeight: '600', color: '#ffffff' },
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%', maxWidth: '400px' },
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', width: '100%', maxWidth: '400px', justifyItems: 'center' },
   card: {
     background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '16px',
     padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column',

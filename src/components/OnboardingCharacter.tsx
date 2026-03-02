@@ -8,15 +8,11 @@ interface Props {
 }
 
 const CHARACTERS: { id: Character; name: string; desc: string; img?: string }[] = [
-  { id: 'cat',      name: '고양이', desc: '겁없는 클라이머', img: '/characters/cat-profile-clean.png' },
-  { id: 'tiger',    name: '호랑이', desc: '불굴의 의지' },
-  { id: 'capybara', name: '카피바라', desc: '여유로운 현자' },
-  { id: 'kangaroo', name: '캥거루', desc: '에너지 폭발' },
-  { id: 'koala',    name: '코알라', desc: '귀엽고 집요한' },
+  { id: 'cat', name: '고양이', desc: '겁없는 클라이머', img: '/characters/cat-profile-clean.png' },
 ];
 
 export default function OnboardingCharacter({ onNext, onBack }: Props) {
-  const [selected, setSelected] = useState<Character | null>(null);
+  const [selected, setSelected] = useState<Character | null>('cat');
 
   return (
     <motion.div

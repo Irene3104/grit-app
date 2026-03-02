@@ -41,11 +41,11 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [showSuccess, setShowSuccess] = useState(false);
 
   // 스프라이트 프레임 전환
-  // 등반 프레임 교체 (같은 얼굴 고양이)
-  const wallFrames = ['/characters/cat-wall-1.png', '/characters/cat-wall-2.png', '/characters/cat-wall-3.png'];
+  // 픽셀아트 등반 8프레임
+  const wallFrames = Array.from({ length: 8 }, (_, i) => `/characters/climb-frame-${i}.png`);
   const [frameIdx, setFrameIdx] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setFrameIdx(i => (i + 1) % wallFrames.length), 450);
+    const id = setInterval(() => setFrameIdx(i => (i + 1) % wallFrames.length), 120); // 빠르게 교체
     return () => clearInterval(id);
   }, []);
 
@@ -253,15 +253,16 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 src={wallFrames[frameIdx]}
                 alt="cat climbing"
                 style={{
-                  width: '72px',
-                  height: '72px',
+                  width: '80px',
+                  height: '80px',
                   objectFit: 'contain',
+                  imageRendering: 'pixelated',  // 픽셀아트 선명하게
                   filter: slipping
-                    ? 'drop-shadow(0 0 8px #ff4444)'
+                    ? 'drop-shadow(0 0 6px #ff4444) hue-rotate(0deg)'
                     : oneHandMode
-                    ? 'drop-shadow(0 0 6px #ffaa00)'
-                    : 'drop-shadow(0 0 4px rgba(255,255,255,0.3))',
-                }}
+                    ? 'drop-shadow(0 0 5px #ffaa00)'
+                    : 'none',
+                } as React.CSSProperties}
               />
               {oneHandMode && (
                 <motion.div

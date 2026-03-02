@@ -35,7 +35,7 @@ function formatTime(ms: number) {
 
 export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [todos, setTodos] = useState(data.todos);
-  const [pomodoroTodo, setPomodoroTodo] = useState<string | null>(null);
+  const [pomodoroTodo, setPomodoroTodo] = useState<{ text: string; id: string } | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
   // 스프라이트 프레임 전환
@@ -156,12 +156,12 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 </motion.div>
                 <span
                   style={{ ...styles.todoText, ...(todo.completed ? styles.todoTextDone : {}) }}
-                  onClick={() => !todo.completed && setPomodoroTodo(todo.text)}
+                  onClick={() => !todo.completed && setPomodoroTodo({ text: todo.text, id: todo.id })}
                 >
                   {todo.text}
                 </span>
                 {!todo.completed && (
-                  <span style={styles.timerIcon} onClick={() => setPomodoroTodo(todo.text)}>⏲</span>
+                  <span style={styles.timerIcon} onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}>⏲</span>
                 )}
               </div>
             ))}
@@ -264,7 +264,11 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
       {/* 포모도로 모달 */}
       <AnimatePresence>
         {pomodoroTodo && (
-          <PomodoroModal todoText={pomodoroTodo} onClose={() => setPomodoroTodo(null)} />
+          <PomodoroModal
+            todoText={pomodoroTodo.text}
+            onClose={() => setPomodoroTodo(null)}
+            onComplete={() => { toggleTodo(pomodoroTodo.id); setPomodoroTodo(null); }}
+          />
         )}
       </AnimatePresence>
     </div>

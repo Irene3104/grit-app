@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 interface Props {
   todoText: string;
   onClose: () => void;
+  onComplete?: () => void; // 타이머 완료 시 자동 체크
 }
 
 const PRESETS = [
@@ -14,7 +15,7 @@ const PRESETS = [
   { label: '1시간', min: 60 },
 ];
 
-export default function PomodoroModal({ todoText, onClose }: Props) {
+export default function PomodoroModal({ todoText, onClose, onComplete }: Props) {
   const [customMin, setCustomMin] = useState('25');
   const [customSec, setCustomSec] = useState('00');
   const [selectedPreset, setSelectedPreset] = useState<number | null>(25);
@@ -46,13 +47,18 @@ export default function PomodoroModal({ todoText, onClose }: Props) {
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.frequency.value = i % 2 === 0 ? 880 : 660;
-          const start = ctx.currentTime + i * 0.4;
-          gain.gain.setValueAtTime(0.3, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
-          osc.start(start);
-          osc.stop(start + 0.35);
+          const startT = ctx.currentTime + i * 0.4;
+          gain.gain.setValueAtTime(0.3, startT);
+          gain.gain.exponentialRampToValueAtTime(0.001, startT + 0.35);
+          osc.start(startT);
+          osc.stop(startT + 0.35);
         }
       } catch {}
+      // 1.5초 후 자동 체크 & 닫기
+      setTimeout(() => {
+        onComplete?.();
+        onClose();
+      }, 1500);
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [running, secondsLeft]);
@@ -170,7 +176,7 @@ export default function PomodoroModal({ todoText, onClose }: Props) {
               <button style={styles.resetBtn} onClick={reset}>초기화</button>
             </>
           )}
-          {isDone && <button style={styles.startBtn} onClick={reset}>다시 시작</button>}
+          {isDone && <p style={styles.doneText}>할 일이 완료됩니다! ✅</p>}
         </div>
       </motion.div>
     </motion.div>

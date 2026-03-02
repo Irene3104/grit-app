@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Character } from '../types';
+import ClimbingCat from './ClimbingCat';
 
 interface Props {
   character: Character;
@@ -8,14 +9,7 @@ interface Props {
   onDone: () => void;
 }
 
-const CHAR_EMOJI: Record<Character, string> = {
-  tiger: '🐯',
-  capybara: '🦦',
-  kangaroo: '🦘',
-  koala: '🐨', cat: '🐱',
-};
-
-export default function IntroScene({ character, goal, onDone }: Props) {
+export default function IntroScene({ character: _character, goal, onDone }: Props) {
   const [phase, setPhase] = useState(0);
   // phase 0: 산 아래 바라보기
   // phase 1: "등벽을 시작합니다" 텍스트
@@ -63,13 +57,12 @@ export default function IntroScene({ character, goal, onDone }: Props) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.span
-              style={styles.charEmoji}
+            <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              {CHAR_EMOJI[character]}
-            </motion.span>
+              <ClimbingCat state="idle" size={90} />
+            </motion.div>
             <p style={styles.goalText}>"{goal}"</p>
           </motion.div>
         )}

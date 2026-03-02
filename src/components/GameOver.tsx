@@ -10,7 +10,7 @@ const CHAR_EMOJI: Record<Character, string> = {
   tiger: '🐯',
   capybara: '🦦',
   kangaroo: '🦘',
-  koala: '🐨',
+  koala: '🐨', cat: '🐱',
 };
 
 export default function GameOver({ character, onRetry }: Props) {

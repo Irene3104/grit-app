@@ -12,7 +12,7 @@ const CHAR_EMOJI: Record<Character, string> = {
   tiger: '🐯',
   capybara: '🦦',
   kangaroo: '🦘',
-  koala: '🐨',
+  koala: '🐨', cat: '🐱',
 };
 
 export default function IntroScene({ character, goal, onDone }: Props) {

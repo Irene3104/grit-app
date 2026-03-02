@@ -9,7 +9,7 @@ interface Props {
 }
 
 const CHAR_EMOJI: Record<Character, string> = {
-  tiger: '🐯', capybara: '🦦', kangaroo: '🦘', koala: '🐨',
+  tiger: '🐯', capybara: '🦦', kangaroo: '🦘', koala: '🐨', cat: '🐱',
 };
 
 const CONFETTI = Array.from({ length: 30 }, (_, i) => ({

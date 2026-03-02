@@ -18,6 +18,8 @@ const CHAR_IMG: Record<string, string> = {
   capybara: '/characters/capybara.png',
   kangaroo: '/characters/kangaroo.png',
   koala: '/characters/koala.png',
+  rabbit: '/characters/rabbit.png',
+  squirrel: '/characters/squirrel.png',
 };
 
 const DURATION_LABEL: Record<string, string> = {
@@ -154,58 +156,86 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
 
         {/* 오른쪽: 절벽 */}
         <div style={styles.right}>
+          {/* 정상 배지 */}
           <div style={styles.summit}>
             <span style={{ fontSize: '1.2rem' }}>⭐</span>
             <span style={styles.summitLabel}>정상</span>
           </div>
+
+          {/* 암벽 + 캐릭터 래퍼 */}
           <div style={styles.cliffWrap}>
-            <div style={styles.cliff}>
-              <motion.div style={styles.progressBar}
-                animate={{ height: `${progress * 100}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
-              <div style={styles.metersTag}>
-                <span style={styles.metersText}>{metersLeft}m</span>
-                <span style={styles.metersSubText}>남음</span>
-              </div>
+
+            {/* 남은 거리 태그 */}
+            <div style={styles.metersTag}>
+              <span style={styles.metersText}>{metersLeft}m</span>
+              <span style={styles.metersSubText}>남음</span>
             </div>
-            {/* 캐릭터 — 등반 모션 */}
-            <motion.div style={styles.charWrap}
+
+            {/* 암벽 이미지 */}
+            <img
+              src="/cliff-wall.png"
+              alt="cliff"
+              style={styles.cliffImg}
+            />
+
+            {/* 진행도 오버레이 (암벽 위에 어두운 마스크 — 위쪽은 어둡고 완료 부분은 밝아짐) */}
+            <motion.div
+              style={styles.progressOverlay}
+              animate={{ height: `${(1 - progress) * 100}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+            />
+
+            {/* 캐릭터 — 암벽 왼쪽 테두리에 매달림 */}
+            <motion.div
+              style={styles.charWrap}
               animate={{ bottom: `${charBottom}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             >
               <motion.img
-                src={CHAR_IMG[data.character]}
+                src={CHAR_IMG[data.character] ?? '/characters/tiger.png'}
                 alt="character"
                 style={{
                   ...styles.charImg,
                   filter: slipping
-                    ? 'drop-shadow(0 0 8px #ff4444)'
+                    ? 'drop-shadow(0 0 10px #ff4444) drop-shadow(0 0 4px #ff0000)'
                     : oneHandMode
-                    ? 'drop-shadow(0 0 6px #ffaa00)'
-                    : 'drop-shadow(0 0 6px rgba(255,255,255,0.3))',
+                    ? 'drop-shadow(0 0 8px #ffaa00) drop-shadow(0 0 3px #ff8800)'
+                    : 'drop-shadow(0 0 8px rgba(255,255,255,0.5))',
                 }}
                 animate={
                   slipping
-                    ? { x: [-6, 6, -4, 4, 0], y: [0, 6, 0], rotate: [-8, 8, 0] }
+                    ? { x: [-6, 6, -4, 4, 0], y: [0, 8, 2], rotate: [-10, 10, 0] }
                     : oneHandMode
-                    ? { x: [-3, 3, -3], rotate: [-8, 8, -8], y: [0, 3, 0] }
-                    : { y: [0, -4, -2, -6, -2, 0], x: [-1, 1, -1, 1, 0], rotate: [-2, 2, -1, 2, 0] }
+                    ? { x: [0, -4, 0, -4, 0], rotate: [-12, -8, -12], y: [0, 4, 0] }
+                    : {
+                        // 자연스러운 등반 — 왼손/오른손 번갈아 느낌
+                        x: [-2, 2, -3, 3, -2, 2, 0],
+                        y: [0, -3, -1, -5, -2, -4, 0],
+                        rotate: [-3, 3, -4, 4, -2, 2, 0],
+                      }
                 }
                 transition={
-                  slipping ? { duration: 0.5 }
-                  : oneHandMode ? { duration: 0.4, repeat: Infinity }
-                  : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                  slipping
+                    ? { duration: 0.5 }
+                    : oneHandMode
+                    ? { duration: 0.5, repeat: Infinity, ease: 'easeInOut' }
+                    : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
                 }
               />
               {oneHandMode && (
-                <motion.div style={styles.dangerBadge}
-                  animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }}
+                <motion.div
+                  style={styles.dangerBadge}
+                  animate={{ opacity: [1, 0.2, 1], scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
                 >⚠️</motion.div>
               )}
             </motion.div>
           </div>
-          <div style={styles.ground}><span style={{ fontSize: '1rem' }}>💀</span></div>
+
+          {/* 바닥 */}
+          <div style={styles.ground}>
+            <span style={{ fontSize: '1rem' }}>💀</span>
+          </div>
         </div>
       </div>
 
@@ -255,17 +285,63 @@ const styles: Record<string, React.CSSProperties> = {
   todoTextDone: { textDecoration: 'line-through', color: '#ffffff35' },
   timerIcon: { color: '#ffffff30', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 },
   // 절벽
-  right: { width: '130px', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '1rem', paddingBottom: '1rem', position: 'relative' },
-  summit: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', marginBottom: '0.5rem' },
+  right: {
+    width: '120px', display: 'flex', flexDirection: 'column', alignItems: 'center',
+    paddingTop: '0.5rem', paddingBottom: '0.5rem', position: 'relative',
+  },
+  summit: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', marginBottom: '0.4rem' },
   summitLabel: { color: '#ffffff80', fontSize: '0.7rem' },
-  cliffWrap: { flex: 1, width: '60px', position: 'relative' },
-  cliff: { position: 'absolute', inset: 0, background: '#2a2a3a', borderRadius: '6px 6px 0 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' },
-  progressBar: { background: 'linear-gradient(to top, #5555ff, #aaaaff)', width: '100%' },
-  metersTag: { position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+
+  // 암벽 래퍼 — 이미지 + 캐릭터 겹치는 컨테이너
+  cliffWrap: {
+    flex: 1,
+    width: '70px',        // 암벽 너비
+    position: 'relative',
+    overflow: 'visible',  // 캐릭터가 왼쪽으로 튀어나와야 함
+  },
+
+  // 암벽 이미지 — 세로 가득 채움
+  cliffImg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center top',
+    borderRadius: '6px 6px 0 0',
+  } as React.CSSProperties,
+
+  // 진행 안된 부분 어둡게 (위에서 내려오는 어두운 오버레이)
+  progressOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    background: 'rgba(0,0,0,0.65)',
+    borderRadius: '6px 6px 0 0',
+    pointerEvents: 'none',
+    zIndex: 2,
+  },
+
+  metersTag: {
+    position: 'absolute', top: '8px', left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    zIndex: 5,
+  },
   metersText: { color: '#ffffff', fontSize: '0.85rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
-  metersSubText: { color: '#ffffff60', fontSize: '0.6rem' },
-  charWrap: { position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 },
-  charImg: { width: '70px', height: '70px', objectFit: 'contain' } as React.CSSProperties,
-  dangerBadge: { fontSize: '0.8rem', marginTop: '-4px' },
-  ground: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.3rem 0' },
+  metersSubText: { color: '#ffffff80', fontSize: '0.6rem' },
+
+  // 캐릭터 — 암벽 왼쪽 면에 달라붙음
+  charWrap: {
+    position: 'absolute',
+    left: '-30px',         // 암벽 왼쪽으로 튀어나옴
+    transform: 'translateX(0)',
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    zIndex: 10,
+  },
+  charImg: { width: '72px', height: '72px', objectFit: 'contain' } as React.CSSProperties,
+  dangerBadge: { fontSize: '0.85rem', marginTop: '-6px' },
+  ground: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem 0' },
 };

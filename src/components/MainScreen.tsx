@@ -15,11 +15,9 @@ interface Props {
 // 등반 스프라이트 프레임 (cat 기준)
 const CLIMB_FRAMES: Record<string, string[]> = {
   cat: [
-    '/characters/cat-climb-1.png',
-    '/characters/cat-climb-2.png',
-    '/characters/cat-climb-3.png',
-    '/characters/cat-climb-4.png',
-    '/characters/cat-climb-5.png',
+    '/characters/cat-climb-f1.png',
+    '/characters/cat-climb-f2.png',
+    '/characters/cat-climb-f3.png',
   ],
   tiger: ['/characters/tiger.png'],
   capybara: ['/characters/capybara.png'],

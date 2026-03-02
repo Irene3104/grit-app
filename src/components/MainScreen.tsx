@@ -36,6 +36,8 @@ function formatTime(ms: number) {
 export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [todos, setTodos] = useState(data.todos);
   const [pomodoroTodo, setPomodoroTodo] = useState<{ text: string; id: string } | null>(null);
+  const pomodoroTodoRef = useRef<{ text: string; id: string } | null>(null);
+  pomodoroTodoRef.current = pomodoroTodo; // 항상 최신값 유지
   const [showSuccess, setShowSuccess] = useState(false);
 
   // 스프라이트 프레임 전환
@@ -268,7 +270,14 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
             todoText={pomodoroTodo.text}
             onClose={() => setPomodoroTodo(null)}
 
-            onComplete={() => toggleTodo(pomodoroTodo.id)}
+            onComplete={() => {
+                const current = pomodoroTodoRef.current;
+                if (current) {
+                  toggleTodo(current.id);
+                  // 1.8초 후 모달 닫기
+                  setTimeout(() => setPomodoroTodo(null), 1800);
+                }
+              }}
           />
         )}
       </AnimatePresence>

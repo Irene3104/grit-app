@@ -84,14 +84,6 @@ export default function PomodoroModal({ todoText, onClose, onComplete }: Props) 
   const displaySec = secondsLeft !== null ? secondsLeft % 60 : totalSecNum;
   const isDone = secondsLeft === 0;
 
-  // 완료 후 2초 뒤 자동 닫기
-  useEffect(() => {
-    if (isDone) {
-      const t = setTimeout(() => onClose(), 2000);
-      return () => clearTimeout(t);
-    }
-  }, [isDone, onClose]);
-
   const r = 60;
   const circumference = 2 * Math.PI * r;
   const strokeDashoffset = circumference * (1 - progress);

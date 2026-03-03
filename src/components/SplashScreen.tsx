@@ -80,22 +80,17 @@ export default function SplashScreen({ onDone }: Props) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* 픽셀 전사 로고 */}
+        {/* Questify 로고 이미지 */}
         <motion.div style={styles.iconWrap}
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <SwordShieldLogo />
-        </motion.div>
-
-        {/* Questify 타이포 */}
-        <motion.div style={styles.title}
-          initial={{ opacity: 0, letterSpacing: '0.5em' }}
-          animate={{ opacity: 1, letterSpacing: '0.04em' }}
-          transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
-        >
-          Questify
+          <img
+            src="/questify-logo.png"
+            alt="Questify"
+            style={{ width: '180px', height: '180px', objectFit: 'contain' }}
+          />
         </motion.div>
 
         {/* 서브 태그라인 */}

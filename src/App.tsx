@@ -6,13 +6,12 @@ import OnboardingGoal from './components/OnboardingGoal';
 import OnboardingDuration from './components/OnboardingDuration';
 import OnboardingTodos from './components/OnboardingTodos';
 import OnboardingDeadline from './components/OnboardingDeadline';
-import OnboardingCharacter from './components/OnboardingCharacter';
-import IntroScene from './components/IntroScene';
+import QuestStart from './components/QuestStart';
 import MainScreen from './components/MainScreen';
 
 const initialData: GritData = {
   goal: '', duration: '', customDate: '', todos: [],
-  deadlineHour: '11:00', deadlinePeriod: 'PM', character: 'tiger',
+  deadlineHour: '11:00', deadlinePeriod: 'PM', character: 'cat',
 };
 
 export default function App() {
@@ -25,7 +24,6 @@ export default function App() {
   };
 
   const goToTodos = () => {
-    // 새 할일 작성 — todos만 초기화하고 main으로
     setData((d) => ({ ...d, todos: [] }));
     setStep('todos');
   };
@@ -54,21 +52,12 @@ export default function App() {
       )}
       {step === 'deadline' && (
         <OnboardingDeadline key="deadline"
-          onNext={(deadlineHour, deadlinePeriod) => { setData((d) => ({ ...d, deadlineHour, deadlinePeriod })); setStep('character'); }}
+          onNext={(deadlineHour, deadlinePeriod) => { setData((d) => ({ ...d, deadlineHour, deadlinePeriod })); setStep('quest-start'); }}
           onBack={() => setStep('todos')}
         />
       )}
-      {step === 'character' && (
-        <OnboardingCharacter key="character"
-          onNext={(character) => { setData((d) => ({ ...d, character })); setStep('intro'); }}
-          onBack={() => setStep('deadline')}
-        />
-      )}
-      {step === 'intro' && (
-        <IntroScene key="intro"
-          character={data.character} goal={data.goal}
-          onDone={() => setStep('main')}
-        />
+      {step === 'quest-start' && (
+        <QuestStart key="quest-start" goal={data.goal} onDone={() => setStep('main')} />
       )}
       {step === 'main' && (
         <MainScreen key="main" data={data}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { GritData } from '../types';
 import { useGameEngine } from '../hooks/useGameEngine';
@@ -14,21 +14,8 @@ const BASE_XP = 20;
 function getLevel(xp: number) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
 function getXpInLevel(xp: number) { return xp % XP_PER_LEVEL; }
 
-interface Props {
-  data: GritData;
-  onNewTodos: () => void;
-  onNewGoal: () => void;
-}
-
-// (스프라이트 이미지 → ClimbingCat SVG 컴포넌트로 대체)
-
-// (상태별 이미지는 ClimbingCat SVG로 대체됨)
-
 const DURATION_LABEL: Record<string, string> = {
-  '1day': '하루',
-  '3days': '3일',
-  '1week': '일주일',
-  'custom': '',
+  '1day': '하루', '3days': '3일', '1week': '일주일', 'custom': '',
 };
 
 function formatTime(ms: number) {
@@ -40,68 +27,62 @@ function formatTime(ms: number) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+interface Props {
+  data: GritData;
+  onNewTodos: () => void;
+  onNewGoal: () => void;
+}
+
 export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [todos, setTodos] = useState(data.todos);
   const [pomodoroTodo, setPomodoroTodo] = useState<{ text: string; id: string } | null>(null);
   const pomodoroTodoRef = useRef<{ text: string; id: string } | null>(null);
-  pomodoroTodoRef.current = pomodoroTodo; // 항상 최신값 유지
-  const toggleTodoRef = useRef<(id: string) => void>(() => {});
+  pomodoroTodoRef.current = pomodoroTodo;
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // XP / 레벨 시스템
   const [xp, setXp] = useState(0);
   const [levelUpShow, setLevelUpShow] = useState(false);
   const level = getLevel(xp);
   const xpInLevel = getXpInLevel(xp);
   const prevLevelRef = useRef(1);
 
-    const {
+  const {
     lives, slipping, oneHandMode, timeLeftMs,
     isDead, isSuccess, toggleTodo, completedCount, totalCount,
   } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod);
-  toggleTodoRef.current = toggleTodo;
 
-  // 레벨업 감지
   useEffect(() => {
     if (level > prevLevelRef.current) {
       setLevelUpShow(true);
       setTimeout(() => setLevelUpShow(false), 2500);
       prevLevelRef.current = level;
     }
-  }, [level]); // 항상 최신 toggleTodo 유지
+  }, [level]);
 
   const isUrgent = timeLeftMs <= 2 * 60 * 60 * 1000 && completedCount < totalCount;
   const isCritical = timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
   const durationLabel = DURATION_LABEL[data.duration] || data.customDate;
+  const stage = getStage(level);
 
   if (isDead) return <GameOver character={data.character} onRetry={onNewGoal} />;
-
   if (isSuccess && !showSuccess) {
-    // 성공 씬 보여주고 나서 선택화면으로
     return <Success goal={data.goal} character={data.character} onDone={() => setShowSuccess(true)} />;
   }
-
   if (showSuccess) {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #0a1a0a, #1a2a0a)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2rem', padding: '2rem' }}>
-        <p style={{ fontSize: '1.8rem', fontWeight: '700', color: '#ffffff' }}>오늘도 수고했어요! 🎉</p>
-        <p style={{ color: '#ffffff60' }}>다음은 무엇을 할까요?</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '360px' }}>
-          <motion.button whileTap={{ scale: 0.95 }}
-            style={{ background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem', cursor: 'pointer' }}
-            onClick={onNewTodos}
-          >
-            <span style={{ fontSize: '1.8rem' }}>📝</span>
-            <span style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: '600' }}>새로운 퀘스트 작성</span>
-            <span style={{ color: '#ffffff50', fontSize: '0.85rem' }}>같은 목표를 향해 계속 나아가기</span>
+      <div style={styles.afterSuccess}>
+        <p style={styles.successTitle}>오늘도 수고했어요! 🎉</p>
+        <p style={styles.successSub}>다음은 무엇을 할까요?</p>
+        <div style={styles.successBtns}>
+          <motion.button whileTap={{ scale: 0.95 }} style={styles.afterBtn} onClick={onNewTodos}>
+            <span style={{ fontSize: '1.6rem' }}>📝</span>
+            <span style={styles.afterBtnTitle}>새로운 퀘스트 작성</span>
+            <span style={styles.afterBtnSub}>같은 목표를 향해 계속</span>
           </motion.button>
-          <motion.button whileTap={{ scale: 0.95 }}
-            style={{ background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '20px', padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem', cursor: 'pointer' }}
-            onClick={onNewGoal}
-          >
-            <span style={{ fontSize: '1.8rem' }}>🏔️</span>
-            <span style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: '600' }}>새로운 목표 설정</span>
-            <span style={{ color: '#ffffff50', fontSize: '0.85rem' }}>새로운 도전을 시작하기</span>
+          <motion.button whileTap={{ scale: 0.95 }} style={styles.afterBtn} onClick={onNewGoal}>
+            <span style={{ fontSize: '1.6rem' }}>🏔️</span>
+            <span style={styles.afterBtnTitle}>새로운 목표 설정</span>
+            <span style={styles.afterBtnSub}>새로운 도전 시작</span>
           </motion.button>
         </div>
       </div>
@@ -109,96 +90,153 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   }
 
   return (
-    <div style={{ ...styles.container, ...(isCritical ? styles.containerCritical : {}) }}>
+    <div style={{ ...styles.page, ...(isCritical ? styles.pageCritical : {}) }}>
       {isCritical && (
         <motion.div style={styles.criticalBorder}
           animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 0.6, repeat: Infinity }}
         />
       )}
 
-      {/* ===== 상단 헤더 ===== */}
+      {/* ── 헤더: 목숨 + 타이머 ── */}
       <div style={styles.header}>
-        {/* 왼쪽: 하트 */}
         <div style={styles.livesRow}>
           {Array.from({ length: 3 }).map((_, i) => (
-            <motion.span key={i} style={{ fontSize: '1.3rem', opacity: i < lives ? 1 : 0.2 }}
+            <motion.span key={i}
+              style={{ fontSize: '1.2rem', opacity: i < lives ? 1 : 0.2 }}
               animate={i === lives && slipping ? { scale: [1, 1.5, 1] } : {}}
             >❤️</motion.span>
           ))}
         </div>
-
-        {/* 중앙: 타이머 */}
         <motion.div style={{ ...styles.timer, ...(isUrgent ? styles.timerUrgent : {}) }}
           animate={isUrgent ? { scale: [1, 1.03, 1] } : {}}
           transition={{ duration: 1, repeat: Infinity }}
         >
           ⏱ {formatTime(timeLeftMs)}
         </motion.div>
-
-        {/* 오른쪽: 빈 공간 (밸런스용) */}
-        <div style={{ width: '80px' }} />
+        <div style={styles.xpBadge}>
+          <span style={styles.xpLabel}>XP</span>
+          <span style={styles.xpVal}>{xp}</span>
+        </div>
       </div>
 
-      {/* ===== 메인 영역 ===== */}
-      <div style={styles.mainArea}>
-        {/* 왼쪽: TODO — 오른쪽 암벽 너비만큼 패딩 확보 */}
-        <div style={styles.left}>
-          <p style={styles.goalText}>{data.goal}</p>
-          <p style={styles.durationText}>{durationLabel} 목표</p>
-          <p style={styles.progressLabel}>⚔️ 퀘스트 {completedCount}/{totalCount} 완료</p>
-          <div style={styles.todoList}>
-            {todos.map((todo) => (
-              <div key={todo.id} style={styles.todoItem}>
-                <motion.div
-                  style={{ ...styles.checkbox, ...(todo.completed ? styles.checkboxDone : {}) }}
-                  animate={todo.completed ? { scale: [1, 1.3, 1] } : {}}
-                  onClick={() => {
-                    if (!todo.completed) setXp(prev => prev + BASE_XP); // 체크 시 XP
-                    toggleTodo(todo.id);
-                  }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {todo.completed && '✓'}
-                </motion.div>
-                <span
-                  style={{ ...styles.todoText, ...(todo.completed ? styles.todoTextDone : {}) }}
-                  onClick={() => !todo.completed && setPomodoroTodo({ text: todo.text, id: todo.id })}
-                >
-                  {todo.text}
-                </span>
-                {!todo.completed && (
-                  <span style={styles.timerIcon} onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}>⏲</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ── 퀘스트 보드 배지 ── */}
+      <div style={styles.boardBadge}>
+        ✦ QUEST BOARD ✦
+      </div>
 
-        {/* ===== 레벨업 패널 ===== */}
-        <div style={styles.cliffPanel}>
-            <PixelCharacter
-              level={level}
-              xp={xp}
-              xpInLevel={xpInLevel}
-              xpPerLevel={XP_PER_LEVEL}
+      {/* ── 타이틀 ── */}
+      <div style={styles.titleBlock}>
+        <h1 style={styles.title}>오늘의 퀘스트</h1>
+        <p style={styles.titleSub}>퀘스트를 완료하고 경험치를 얻으세요</p>
+      </div>
+
+      {/* ── 캐릭터 카드 ── */}
+      <div style={styles.charCard}>
+        <p style={styles.charCardLabel}>MY CHARACTER</p>
+        <div style={styles.charCardBody}>
+          <PixelCharacter
+            level={level}
+            xp={xp}
+            xpInLevel={xpInLevel}
+            xpPerLevel={XP_PER_LEVEL}
+          />
+        </div>
+        {oneHandMode && (
+          <motion.p style={styles.danger}
+            animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }}
+          >⚠️ 위험 상태!</motion.p>
+        )}
+      </div>
+
+      {/* ── 스탯 그리드 ── */}
+      <div style={styles.statGrid}>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>🏆</span>
+          <span style={styles.statKey}>LEVEL</span>
+          <span style={styles.statVal}>{level}</span>
+        </div>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>⚡</span>
+          <span style={styles.statKey}>XP</span>
+          <span style={styles.statVal}>{xpInLevel}<span style={styles.statSub}>/{XP_PER_LEVEL}</span></span>
+          {/* XP 미니 바 */}
+          <div style={styles.miniBarTrack}>
+            <motion.div style={styles.miniBarFill}
+              animate={{ width: `${(xpInLevel / XP_PER_LEVEL) * 100}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
             />
-            {/* 위험 상태 표시 */}
-            {oneHandMode && (
-              <motion.div
-                style={{ textAlign: 'center', marginTop: '0.5rem' }}
-                animate={{ opacity: [1, 0.2, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-              >⚠️ 위험!</motion.div>
-            )}
           </div>
         </div>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>🔥</span>
+          <span style={styles.statKey}>STREAK</span>
+          <span style={styles.statVal}>1<span style={styles.statSub}> days</span></span>
+        </div>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>✅</span>
+          <span style={styles.statKey}>DONE</span>
+          <span style={styles.statVal}>{completedCount}</span>
+        </div>
+      </div>
 
-        {/* 레벨업 오버레이 */}
-        <LevelUpOverlay
-          show={levelUpShow}
-          level={level}
-          stageName={getStage(level).name}
-        />
+      {/* ── 구분선 ── */}
+      <div style={styles.divider} />
+
+      {/* ── 퀘스트 목록 헤더 ── */}
+      <div style={styles.questHeader}>
+        <p style={styles.questTitle}>⚔️ {durationLabel || '오늘'} 퀘스트</p>
+        <p style={styles.questGoal}>{data.goal}</p>
+        <p style={styles.questProgress}>{completedCount}/{totalCount} 완료</p>
+      </div>
+
+      {/* ── 퀘스트 리스트 ── */}
+      <div style={styles.questList}>
+        <AnimatePresence>
+          {todos.map((todo, idx) => (
+            <motion.div key={todo.id}
+              style={{ ...styles.questItem, ...(todo.completed ? styles.questItemDone : {}) }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.06 }}
+              layout
+            >
+              {/* 체크박스 */}
+              <motion.div
+                style={{ ...styles.checkbox, ...(todo.completed ? styles.checkboxDone : {}) }}
+                animate={todo.completed ? { scale: [1, 1.35, 1] } : {}}
+                onClick={() => {
+                  if (!todo.completed) setXp(prev => prev + BASE_XP);
+                  toggleTodo(todo.id);
+                }}
+                whileTap={{ scale: 0.88 }}
+              >
+                {todo.completed && '✓'}
+              </motion.div>
+
+              {/* 텍스트 */}
+              <span
+                style={{ ...styles.questText, ...(todo.completed ? styles.questTextDone : {}) }}
+                onClick={() => !todo.completed && setPomodoroTodo({ text: todo.text, id: todo.id })}
+              >
+                {todo.text}
+              </span>
+
+              {/* 포모도로 버튼 */}
+              {!todo.completed && (
+                <motion.span
+                  style={styles.timerBtn}
+                  whileTap={{ scale: 0.85 }}
+                  onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}
+                >⏲</motion.span>
+              )}
+              {todo.completed && <span style={styles.doneTag}>완료</span>}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* 레벨업 오버레이 */}
+      <LevelUpOverlay show={levelUpShow} level={level} stageName={stage.name} />
 
       {/* 포모도로 모달 */}
       <AnimatePresence>
@@ -206,17 +244,14 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           <PomodoroModal
             todoText={pomodoroTodo.text}
             onClose={() => setPomodoroTodo(null)}
-
             onComplete={() => {
-                const current = pomodoroTodoRef.current;
-                if (current) {
-                  setTodos(prev =>
-                    prev.map(t => t.id === current.id ? { ...t, completed: true } : t)
-                  );
-                  setXp(prev => prev + BASE_XP * 2); // 포모도로 완료: 2배 XP
-                  setTimeout(() => setPomodoroTodo(null), 1800);
-                }
-              }}
+              const current = pomodoroTodoRef.current;
+              if (current) {
+                setTodos(prev => prev.map(t => t.id === current.id ? { ...t, completed: true } : t));
+                setXp(prev => prev + BASE_XP * 2);
+                setTimeout(() => setPomodoroTodo(null), 1800);
+              }
+            }}
           />
         )}
       </AnimatePresence>
@@ -225,139 +260,156 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex', flexDirection: 'column', minHeight: '100vh',
-    background: 'linear-gradient(to bottom, #080818, #18182a)', position: 'relative', overflow: 'hidden',
+  page: {
+    minHeight: '100vh',
+    background: '#0d0d14',
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '0 1.2rem 3rem',
+    overflowY: 'auto',
+    position: 'relative',
   },
-  containerCritical: { background: 'linear-gradient(to bottom, #180808, #2a0808)' },
+  pageCritical: { background: 'linear-gradient(to bottom, #1a0808, #0d0d14)' },
   criticalBorder: {
     position: 'fixed', inset: 0, border: '4px solid #ff4444',
     pointerEvents: 'none', zIndex: 100,
   },
+
   // 헤더
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '1rem 1.5rem',
+    padding: '1rem 0', borderBottom: '1px solid #ffffff0f', marginBottom: '0.8rem',
   },
-  livesRow: { display: 'flex', gap: '0.3rem', width: '80px' },
-  timer: { fontSize: '1.4rem', fontWeight: '700', color: '#ffffff', fontVariantNumeric: 'tabular-nums' },
+  livesRow: { display: 'flex', gap: '0.25rem' },
+  timer: {
+    fontSize: '1.2rem', fontWeight: '800', color: '#ffffff',
+    fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace',
+  },
   timerUrgent: { color: '#ff6666' },
-  // 메인
-  mainArea: { display: 'flex', flex: 1, position: 'relative' },
-  goalText: { fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', lineHeight: 1.3 },
-  durationText: { fontSize: '0.8rem', color: '#ffffff40', marginBottom: '0.2rem' },
-  progressLabel: { color: '#ffffff80', fontSize: '0.9rem', fontWeight: '600' },
-  todoList: { display: 'flex', flexDirection: 'column', gap: '0.7rem' },
-  todoItem: { display: 'flex', alignItems: 'center', gap: '0.7rem' },
-  checkbox: {
-    width: '22px', height: '22px', borderRadius: '6px', border: '2px solid #ffffff40',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '0.85rem', color: '#000000', flexShrink: 0, cursor: 'pointer', transition: 'all 0.2s',
+  xpBadge: {
+    display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
   },
-  checkboxDone: { background: '#4ade80', border: '2px solid #4ade80', color: '#000000' },
-  todoText: { color: '#ffffff', fontSize: '0.95rem', flex: 1, cursor: 'pointer' },
-  todoTextDone: { textDecoration: 'line-through', color: '#ffffff35' },
-  timerIcon: { color: '#ffffff30', fontSize: '0.85rem', cursor: 'pointer', flexShrink: 0 },
-  // 왼쪽 할일 영역 — 오른쪽 암벽 너비(80px) 피해서
-  left: {
-    flex: 1,
-    padding: '1rem 1.2rem',
-    paddingRight: '0.5rem',
+  xpLabel: { color: '#ffffff40', fontSize: '0.6rem', letterSpacing: '0.1em' },
+  xpVal: { color: '#ffd700', fontSize: '0.9rem', fontWeight: '700', fontFamily: 'monospace' },
+
+  // 배지
+  boardBadge: {
+    alignSelf: 'center',
+    background: '#a78bfa18',
+    border: '1px solid #a78bfa50',
+    borderRadius: '999px',
+    padding: '0.3rem 1rem',
+    color: '#a78bfa',
+    fontSize: '0.65rem',
+    fontWeight: '700',
+    letterSpacing: '0.12em',
+    marginBottom: '0.6rem',
+  },
+
+  // 타이틀
+  titleBlock: { textAlign: 'center', marginBottom: '1rem' },
+  title: { margin: 0, fontSize: '1.9rem', fontWeight: '800', color: '#ffffff' },
+  titleSub: { margin: '0.3rem 0 0', fontSize: '0.8rem', color: '#ffffff60' },
+
+  // 캐릭터 카드
+  charCard: {
+    background: '#13131e',
+    border: '1px solid #ffffff12',
+    borderRadius: '16px',
+    padding: '1rem',
+    marginBottom: '0.8rem',
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
+  },
+  charCardLabel: {
+    color: '#ffffff40', fontSize: '0.6rem', letterSpacing: '0.12em',
+    fontWeight: '700', margin: '0 0 0.5rem',
+  },
+  charCardBody: { width: '100%', maxWidth: '200px' },
+  danger: { color: '#ff6666', fontSize: '0.85rem', margin: '0.5rem 0 0' },
+
+  // 스탯 그리드
+  statGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
     gap: '0.6rem',
-    minWidth: 0,
+    marginBottom: '0.8rem',
   },
-
-  // ===== 암벽 패널 — 화면 오른쪽 끝 고정, 세로 전체 =====
-  cliffPanel: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    width: '110px',
-    zIndex: 20,
-    overflow: 'visible',
-  },
-
-  // 정상 — cliffZone 안, 상단 중앙
-  summit: {
-    position: 'absolute',
-    top: '4px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+  statCard: {
+    background: '#13131e',
+    border: '1px solid #ffffff10',
+    borderRadius: '12px',
+    padding: '0.8rem 1rem',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.1rem',
-    zIndex: 25,
-    whiteSpace: 'nowrap',
+    gap: '0.2rem',
   },
-  summitLabel: { color: '#ffffffcc', fontSize: '0.6rem', fontWeight: '600' },
-
-  // 암벽 이미지 — 오른쪽 끝에 딱 붙어서 세로 전체
-  cliffZone: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    width: '90px',
-    overflow: 'visible',
+  statIcon: { fontSize: '1rem' },
+  statKey: { color: '#ffffff50', fontSize: '0.6rem', fontWeight: '700', letterSpacing: '0.1em' },
+  statVal: { color: '#ffffff', fontSize: '1.6rem', fontWeight: '800', fontFamily: 'monospace', lineHeight: 1 },
+  statSub: { color: '#ffffff50', fontSize: '0.8rem', fontWeight: '400' },
+  miniBarTrack: {
+    marginTop: '0.3rem', height: '4px', background: '#ffffff15', borderRadius: '2px', overflow: 'hidden',
   },
-
-  cliffImg: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: '100%',
+  miniBarFill: {
     height: '100%',
-  } as React.CSSProperties,
-
-  progressOverlay: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: '100%',
-    background: 'rgba(0,0,0,0.55)',
-    pointerEvents: 'none',
-    zIndex: 2,
+    background: 'linear-gradient(90deg, #a78bfa, #f97316)',
+    borderRadius: '2px',
   },
 
-  // 남은 거리 — 정상 별 바로 아래
-  metersTag: {
-    position: 'absolute',
-    top: '46px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    zIndex: 5,
-    whiteSpace: 'nowrap',
-  },
-  metersText: { color: '#ffffff', fontSize: '0.78rem', fontWeight: '700', fontVariantNumeric: 'tabular-nums' },
-  metersSubText: { color: '#ffffff80', fontSize: '0.56rem' },
+  // 구분선
+  divider: { height: '1px', background: '#ffffff0f', margin: '0.4rem 0 0.8rem' },
 
-  // 캐릭터 — 경사면 위 (삼각형 왼쪽 면에 붙음)
-  charWrap: {
-    position: 'absolute',
-    right: '60px',
-    bottom: 8,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    zIndex: 10,
+  // 퀘스트 섹션 헤더
+  questHeader: { marginBottom: '0.6rem' },
+  questTitle: { margin: 0, color: '#ffffff', fontWeight: '700', fontSize: '1rem' },
+  questGoal: { margin: '0.2rem 0 0', color: '#a78bfa', fontSize: '0.8rem', fontWeight: '600' },
+  questProgress: { margin: '0.1rem 0 0', color: '#ffffff50', fontSize: '0.75rem' },
+
+  // 퀘스트 리스트
+  questList: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
+  questItem: {
+    display: 'flex', alignItems: 'center', gap: '0.7rem',
+    background: '#13131e',
+    border: '1px solid #ffffff10',
+    borderRadius: '12px',
+    padding: '0.9rem 1rem',
+    transition: 'all 0.2s',
   },
-  charImg: { width: '64px', height: '64px', objectFit: 'contain' } as React.CSSProperties,
-  dangerBadge: { fontSize: '0.8rem', marginTop: '-4px' },
-  ground: {
-    position: 'absolute',
-    bottom: '4px',
-    right: '0',
-    width: '60px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 5,
+  questItemDone: { opacity: 0.5, borderColor: '#4ade8030' },
+  checkbox: {
+    width: '24px', height: '24px', borderRadius: '7px',
+    border: '2px solid #ffffff30',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '0.9rem', color: '#000', flexShrink: 0, cursor: 'pointer',
   },
+  checkboxDone: { background: '#4ade80', border: '2px solid #4ade80' },
+  questText: { flex: 1, color: '#ffffff', fontSize: '0.95rem', cursor: 'pointer' },
+  questTextDone: { textDecoration: 'line-through', color: '#ffffff50' },
+  timerBtn: {
+    color: '#ffffff30', fontSize: '1rem', cursor: 'pointer', flexShrink: 0,
+  },
+  doneTag: {
+    color: '#4ade80', fontSize: '0.7rem', fontWeight: '700',
+    background: '#4ade8015', borderRadius: '999px', padding: '0.1rem 0.5rem',
+    flexShrink: 0,
+  },
+
+  // 성공 후 화면
+  afterSuccess: {
+    minHeight: '100vh', background: 'linear-gradient(to bottom, #0a1a0a, #1a2a0a)',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    gap: '1.5rem', padding: '2rem',
+  },
+  successTitle: { fontSize: '1.8rem', fontWeight: '700', color: '#ffffff', margin: 0 },
+  successSub: { color: '#ffffff60', margin: 0 },
+  successBtns: { display: 'flex', flexDirection: 'column', gap: '0.8rem', width: '100%', maxWidth: '360px' },
+  afterBtn: {
+    background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '16px',
+    padding: '1.2rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+    gap: '0.3rem', cursor: 'pointer', textAlign: 'left',
+  },
+  afterBtnTitle: { color: '#ffffff', fontSize: '1rem', fontWeight: '600' },
+  afterBtnSub: { color: '#ffffff50', fontSize: '0.82rem' },
 };

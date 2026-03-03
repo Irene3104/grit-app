@@ -22,6 +22,5 @@ export type OnboardingStep =
   | 'duration'
   | 'todos'
   | 'deadline'
-  | 'character'
-  | 'intro'
+  | 'quest-start'
   | 'main';

@@ -1,6 +1,49 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 
+// 픽셀 아트 전사 실루엣 로고
+// 각 행: 1=보라(갑옷), 2=골드(장식), 3=밝은보라(하이라이트), 0=투명
+const WARRIOR_PIXELS = [
+  [0,0,1,1,1,1,0,0],  // 투구 윗부분
+  [0,1,2,1,1,2,1,0],  // 투구 (골드 장식)
+  [0,1,1,3,3,1,1,0],  // 얼굴
+  [0,0,1,1,1,1,0,0],  // 목
+  [1,1,1,1,1,1,1,1],  // 어깨 (넓음)
+  [0,1,2,1,1,2,1,0],  // 몸통 (골드 장식)
+  [0,1,1,1,1,1,1,0],  // 몸통 하단
+  [0,0,2,0,0,2,0,0],  // 검 손잡이
+  [0,0,2,0,0,2,0,0],  // 검 날
+  [0,0,3,0,0,3,0,0],  // 검 끝 (빛남)
+];
+
+const PIXEL_COLORS: Record<number, string> = {
+  1: '#a78bfa',  // 보라 (갑옷)
+  2: '#fbbf24',  // 골드 (장식/검)
+  3: '#e0d7ff',  // 밝은 보라 (하이라이트)
+};
+
+function PixelWarriorLogo() {
+  const size = 8;
+  return (
+    <div style={{
+      display: 'inline-flex', flexDirection: 'column',
+      imageRendering: 'pixelated',
+      filter: 'drop-shadow(0 0 12px #a78bfa80)',
+    }}>
+      {WARRIOR_PIXELS.map((row, y) => (
+        <div key={y} style={{ display: 'flex' }}>
+          {row.map((cell, x) => (
+            <div key={x} style={{
+              width: size, height: size,
+              backgroundColor: PIXEL_COLORS[cell] ?? 'transparent',
+            }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface Props {
   onDone: () => void;
 }
@@ -37,33 +80,13 @@ export default function SplashScreen({ onDone }: Props) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* 아이콘 — 등반 픽토그램 */}
+        {/* 픽셀 전사 로고 */}
         <motion.div style={styles.iconWrap}
-          initial={{ rotate: -15, opacity: 0 }}
-          animate={{ rotate: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            {/* 암벽 */}
-            <polygon points="8,58 56,58 44,10 20,10" fill="#3a3a5a" opacity="0.9"/>
-            <polygon points="8,58 56,58 52,30 12,30" fill="#4a4a7a" opacity="0.8"/>
-            {/* 홀드 */}
-            <circle cx="28" cy="22" r="3" fill="#a78bfa"/>
-            <circle cx="40" cy="38" r="3" fill="#a78bfa"/>
-            <circle cx="22" cy="44" r="3" fill="#a78bfa"/>
-            {/* 캐릭터 (고양이 실루엣) */}
-            <circle cx="32" cy="18" r="5" fill="#f97316"/>
-            {/* 귀 */}
-            <polygon points="28,14 30,10 32,14" fill="#f97316"/>
-            <polygon points="32,14 34,10 36,14" fill="#f97316"/>
-            {/* 몸 */}
-            <rect x="28" y="22" width="8" height="10" rx="2" fill="#f97316"/>
-            {/* 팔 — 홀드 잡는 모션 */}
-            <line x1="28" y1="25" x2="22" y2="22" stroke="#f97316" strokeWidth="3" strokeLinecap="round"/>
-            <line x1="36" y1="25" x2="40" y2="22" stroke="#f97316" strokeWidth="3" strokeLinecap="round"/>
-            {/* 헬멧 */}
-            <path d="M27,17 Q32,12 37,17" stroke="#ef4444" strokeWidth="3" fill="none" strokeLinecap="round"/>
-          </svg>
+          <PixelWarriorLogo />
         </motion.div>
 
         {/* Questify 타이포 */}

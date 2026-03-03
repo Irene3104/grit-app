@@ -9,7 +9,16 @@ import { PixelCharacter, getStage } from './PixelCharacter';
 import { LevelUpOverlay } from './LevelUpOverlay';
 
 const XP_PER_LEVEL = 100;
-const BASE_XP = 20;
+
+// 퀘스트 텍스트 기반으로 XP 변동 (글자 수로 난이도 반영)
+function calcQuestXp(text: string): number {
+  const len = text.trim().length;
+  if (len <= 5) return 12;
+  if (len <= 10) return 15;
+  if (len <= 20) return 20;
+  if (len <= 35) return 25;
+  return 30;
+}
 
 function getLevel(xp: number) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
 function getXpInLevel(xp: number) { return xp % XP_PER_LEVEL; }
@@ -205,7 +214,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 style={{ ...styles.checkbox, ...(todo.completed ? styles.checkboxDone : {}) }}
                 animate={todo.completed ? { scale: [1, 1.35, 1] } : {}}
                 onClick={() => {
-                  if (!todo.completed) setXp(prev => prev + BASE_XP);
+                  if (!todo.completed) setXp(prev => prev + calcQuestXp(todo.text));
                   toggleTodo(todo.id);
                 }}
                 whileTap={{ scale: 0.88 }}
@@ -221,15 +230,22 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 {todo.text}
               </span>
 
-              {/* 포모도로 버튼 */}
-              {!todo.completed && (
-                <motion.span
-                  style={styles.timerBtn}
-                  whileTap={{ scale: 0.85 }}
-                  onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}
-                >⏲</motion.span>
+              {/* XP 배지 or 포모도로 */}
+              {!todo.completed ? (
+                <div style={styles.questRight}>
+                  <motion.div style={styles.xpBadgeItem} whileTap={{ scale: 0.9 }}>
+                    <span style={styles.xpBadgeIcon}>⚡</span>
+                    <span style={styles.xpBadgeText}>+{calcQuestXp(todo.text)}</span>
+                  </motion.div>
+                  <motion.span
+                    style={styles.timerBtn}
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}
+                  >⏲</motion.span>
+                </div>
+              ) : (
+                <span style={styles.doneTag}>완료</span>
               )}
-              {todo.completed && <span style={styles.doneTag}>완료</span>}
             </motion.div>
           ))}
         </AnimatePresence>
@@ -248,7 +264,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
               const current = pomodoroTodoRef.current;
               if (current) {
                 setTodos(prev => prev.map(t => t.id === current.id ? { ...t, completed: true } : t));
-                setXp(prev => prev + BASE_XP * 2);
+                setXp(prev => prev + calcQuestXp(current.text) * 2); // 포모도로 완료: 2배 XP
                 setTimeout(() => setPomodoroTodo(null), 1800);
               }
             }}
@@ -388,12 +404,30 @@ const styles: Record<string, React.CSSProperties> = {
   questText: { flex: 1, color: '#ffffff', fontSize: '0.95rem', cursor: 'pointer' },
   questTextDone: { textDecoration: 'line-through', color: '#ffffff50' },
   timerBtn: {
-    color: '#ffffff30', fontSize: '1rem', cursor: 'pointer', flexShrink: 0,
+    color: '#ffffff25', fontSize: '0.9rem', cursor: 'pointer', flexShrink: 0,
   },
   doneTag: {
     color: '#4ade80', fontSize: '0.7rem', fontWeight: '700',
     background: '#4ade8015', borderRadius: '999px', padding: '0.1rem 0.5rem',
     flexShrink: 0,
+  },
+  questRight: {
+    display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0,
+  },
+  xpBadgeItem: {
+    display: 'flex', alignItems: 'center', gap: '0.2rem',
+    background: 'rgba(202, 138, 4, 0.18)',
+    border: '1px solid rgba(202, 138, 4, 0.35)',
+    borderRadius: '999px',
+    padding: '0.2rem 0.55rem',
+    cursor: 'default',
+  },
+  xpBadgeIcon: {
+    fontSize: '0.7rem', color: '#f59e0b',
+  },
+  xpBadgeText: {
+    fontSize: '0.75rem', fontWeight: '700', color: '#fbbf24',
+    fontFamily: 'monospace',
   },
 
   // 성공 후 화면

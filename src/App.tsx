@@ -19,11 +19,13 @@ export default function App() {
   const [data, setData] = useState<GritData>(initialData);
 
   const resetAll = () => {
+    localStorage.removeItem('grit_session_start');
     setData(initialData);
     setStep('goal');
   };
 
   const goToTodos = () => {
+    localStorage.removeItem('grit_session_start');
     setData((d) => ({ ...d, todos: [] }));
     setStep('todos');
   };

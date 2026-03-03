@@ -67,7 +67,11 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const {
     lives, slipping, oneHandMode, timeLeftMs,
     isDead, isSuccess, toggleTodo, completedCount, totalCount,
-  } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod);
+  } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod, () => {
+    // 90% 경과 패널티: XP 0으로 초기화
+    setXp(0);
+    localStorage.setItem('grit_xp', '0');
+  });
 
   const isFirstRender = useRef(true);
   useEffect(() => {

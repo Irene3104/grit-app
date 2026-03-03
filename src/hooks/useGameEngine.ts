@@ -28,9 +28,18 @@ export function useGameEngine(
   todos: TodoItem[],
   setTodos: React.Dispatch<React.SetStateAction<TodoItem[]>>,
   deadlineHour: string,
-  deadlinePeriod: 'AM' | 'PM'
+  deadlinePeriod: 'AM' | 'PM',
+  onXpReset?: () => void   // 90% 시점에 XP 초기화 콜백
 ) {
   const deadlineMs = getDeadlineMs(deadlineHour, deadlinePeriod);
+
+  // 총 가용 시간 (퀘스트 시작 시점 기준으로 localStorage에 저장)
+  const [totalDurationMs] = useState<number>(() => {
+    const saved = localStorage.getItem('grit_session_start');
+    const start = saved ? parseInt(saved, 10) : Date.now();
+    if (!saved) localStorage.setItem('grit_session_start', String(Date.now()));
+    return deadlineMs - start;
+  });
 
   const completedCount = todos.filter((t) => t.completed).length;
   const totalCount = todos.length;
@@ -46,6 +55,8 @@ export function useGameEngine(
   // 성공 체크
   useEffect(() => {
     if (completedCount === totalCount && totalCount > 0 && !isDead) {
+      // 세션 시작 시간 초기화
+      localStorage.removeItem('grit_session_start');
       setIsSuccess(true);
     }
   }, [completedCount, totalCount, isDead]);
@@ -58,38 +69,46 @@ export function useGameEngine(
       setTimeLeftMs(left);
 
       if (left <= 0 && completedCount < totalCount) {
+        localStorage.removeItem('grit_session_start');
         setIsDead(true);
         return;
       }
 
       const hasRemaining = completedCount < totalCount;
+      // elapsed = 경과 비율 (0~1)
+      const elapsed = Math.max(0, 1 - left / totalDurationMs);
 
-      // 2시간 전 목숨 -1
-      if (left <= 2 * 60 * 60 * 1000 && !livesDeducted.has('2h') && hasRemaining) {
+      // 50% 경과 → ❤️ -1
+      if (elapsed >= 0.5 && !livesDeducted.has('50pct') && hasRemaining) {
         setLives((l) => Math.max(0, l - 1));
-        setLivesDeducted((s) => new Set([...s, '2h']));
+        setLivesDeducted((s) => new Set([...s, '50pct']));
         setSlipping(true);
         setTimeout(() => setSlipping(false), 2000);
       }
-      // 1시간 전 목숨 -1
-      if (left <= 1 * 60 * 60 * 1000 && !livesDeducted.has('1h') && hasRemaining) {
+
+      // 90% 경과 → ❤️ -1 + XP 초기화 패널티
+      if (elapsed >= 0.9 && !livesDeducted.has('90pct') && hasRemaining) {
         setLives((l) => Math.max(0, l - 1));
-        setLivesDeducted((s) => new Set([...s, '1h']));
+        setLivesDeducted((s) => new Set([...s, '90pct']));
         setSlipping(true);
         setTimeout(() => setSlipping(false), 2000);
+        // XP 리셋 패널티
+        onXpReset?.();
       }
 
       // 목숨 0이면 사망
       if (lives <= 0 && hasRemaining) {
+        localStorage.removeItem('grit_session_start');
         setIsDead(true);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [deadlineMs, completedCount, totalCount, lives, livesDeducted, isDead, isSuccess]);
+  }, [deadlineMs, totalDurationMs, completedCount, totalCount, lives, livesDeducted, isDead, isSuccess, onXpReset]);
 
-  const oneHandMode =
-    timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
+  // 위험 상태: 90% 이상 경과
+  const elapsed = Math.max(0, 1 - timeLeftMs / totalDurationMs);
+  const oneHandMode = elapsed >= 0.9 && completedCount < totalCount;
 
   const metersLeft = calcMetersLeft(progress);
 

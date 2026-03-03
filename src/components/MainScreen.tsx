@@ -49,18 +49,34 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   pomodoroTodoRef.current = pomodoroTodo;
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const [xp, setXp] = useState(0);
+  // XP — localStorage에서 불러와서 세션 간 유지
+  const [xp, setXp] = useState<number>(() => {
+    const saved = localStorage.getItem('grit_xp');
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [levelUpShow, setLevelUpShow] = useState(false);
   const level = getLevel(xp);
   const xpInLevel = getXpInLevel(xp);
-  const prevLevelRef = useRef(1);
+  const prevLevelRef = useRef(level);
+
+  // XP 변경될 때마다 저장
+  useEffect(() => {
+    localStorage.setItem('grit_xp', String(xp));
+  }, [xp]);
 
   const {
     lives, slipping, oneHandMode, timeLeftMs,
     isDead, isSuccess, toggleTodo, completedCount, totalCount,
   } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod);
 
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      // 첫 렌더에서는 레벨업 알림 안 띄움 (저장된 XP 로드 시)
+      isFirstRender.current = false;
+      prevLevelRef.current = level;
+      return;
+    }
     if (level > prevLevelRef.current) {
       setLevelUpShow(true);
       setTimeout(() => setLevelUpShow(false), 2500);
@@ -233,19 +249,16 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 {todo.text}
               </span>
 
-              {/* XP 배지 or 포모도로 */}
+              {/* XP 배지 (탭하면 포모도로) or 완료 태그 */}
               {!todo.completed ? (
-                <div style={styles.questRight}>
-                  <motion.div style={styles.xpBadgeItem} whileTap={{ scale: 0.9 }}>
-                    <span style={styles.xpBadgeIcon}>⚡</span>
-                    <span style={styles.xpBadgeText}>+{calcQuestXp(todo.text)}</span>
-                  </motion.div>
-                  <motion.span
-                    style={styles.timerBtn}
-                    whileTap={{ scale: 0.85 }}
-                    onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}
-                  >⏲</motion.span>
-                </div>
+                <motion.div
+                  style={styles.xpBadgeItem}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setPomodoroTodo({ text: todo.text, id: todo.id })}
+                >
+                  <span style={styles.xpBadgeIcon}>⚡</span>
+                  <span style={styles.xpBadgeText}>+{calcQuestXp(todo.text)}</span>
+                </motion.div>
               ) : (
                 <span style={styles.doneTag}>완료</span>
               )}
@@ -401,16 +414,10 @@ const styles: Record<string, React.CSSProperties> = {
   checkboxDone: { background: '#4ade80', border: '2px solid #4ade80' },
   questText: { flex: 1, color: '#ffffff', fontSize: '0.95rem', cursor: 'pointer' },
   questTextDone: { textDecoration: 'line-through', color: '#ffffff50' },
-  timerBtn: {
-    color: '#ffffff25', fontSize: '0.9rem', cursor: 'pointer', flexShrink: 0,
-  },
   doneTag: {
     color: '#4ade80', fontSize: '0.7rem', fontWeight: '700',
     background: '#4ade8015', borderRadius: '999px', padding: '0.1rem 0.5rem',
     flexShrink: 0,
-  },
-  questRight: {
-    display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0,
   },
   xpBadgeItem: {
     display: 'flex', alignItems: 'center', gap: '0.2rem',
@@ -418,7 +425,8 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(202, 138, 4, 0.35)',
     borderRadius: '999px',
     padding: '0.2rem 0.55rem',
-    cursor: 'default',
+    cursor: 'pointer',
+    flexShrink: 0,
   },
   xpBadgeIcon: {
     fontSize: '0.7rem', color: '#f59e0b',

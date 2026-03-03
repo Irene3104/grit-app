@@ -66,13 +66,13 @@ export default function SplashScreen({ onDone }: Props) {
           </svg>
         </motion.div>
 
-        {/* GRIT 타이포 */}
+        {/* Questify 타이포 */}
         <motion.div style={styles.title}
           initial={{ opacity: 0, letterSpacing: '0.5em' }}
-          animate={{ opacity: 1, letterSpacing: '0.08em' }}
+          animate={{ opacity: 1, letterSpacing: '0.04em' }}
           transition={{ delay: 0.4, duration: 0.7, ease: 'easeOut' }}
         >
-          GRIT
+          Questify
         </motion.div>
 
         {/* 서브 태그라인 */}
@@ -128,10 +128,10 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '0.5rem',
   },
   title: {
-    fontSize: '4rem',
+    fontSize: '3.2rem',
     fontWeight: '900',
     color: '#ffffff',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.04em',
     fontFamily: '"Inter", "SF Pro Display", system-ui, sans-serif',
     lineHeight: 1,
   },

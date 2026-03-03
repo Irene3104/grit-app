@@ -175,7 +175,7 @@ export default function PomodoroModal({ todoText, onClose, onComplete }: Props) 
               <button style={styles.resetBtn} onClick={reset}>초기화</button>
             </>
           )}
-          {isDone && <p style={styles.doneText}>할 일이 완료됩니다! ✅</p>}
+          {isDone && <p style={styles.doneText}>퀘스트 완료! ✅</p>}
         </div>
       </motion.div>
     </motion.div>

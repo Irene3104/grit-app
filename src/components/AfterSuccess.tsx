@@ -22,7 +22,7 @@ export default function AfterSuccess({ onNewTodos, onNewGoal }: Props) {
           onClick={onNewTodos}
         >
           <span style={styles.optionIcon}>📝</span>
-          <span style={styles.optionTitle}>새로운 할 일 작성</span>
+          <span style={styles.optionTitle}>새로운 퀘스트 작성</span>
           <span style={styles.optionDesc}>같은 목표를 향해 계속 나아가기</span>
         </motion.button>
         <motion.button

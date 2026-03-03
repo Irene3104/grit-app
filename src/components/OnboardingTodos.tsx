@@ -30,7 +30,7 @@ export default function OnboardingTodos({ onNext, onBack }: Props) {
       style={styles.container}
     >
       <button style={styles.backBtn} onClick={onBack}>← 뒤로</button>
-      <p style={styles.label}>할 일 목록을 작성하세요.</p>
+      <p style={styles.label}>퀘스트를 입력하세요.</p>
       <div style={styles.list}>
         <AnimatePresence>
           {todos.map((todo, idx) => (
@@ -39,7 +39,7 @@ export default function OnboardingTodos({ onNext, onBack }: Props) {
               exit={{ opacity: 0, x: 20 }} style={styles.todoRow}
             >
               <span style={styles.num}>{idx + 1}.</span>
-              <input style={styles.input} type="text" placeholder="할 일을 입력하세요"
+              <input style={styles.input} type="text" placeholder="퀘스트를 입력하세요"
                 value={todo.text} onChange={(e) => updateTodo(todo.id, e.target.value)}
                 autoFocus={idx === todos.length - 1}
               />

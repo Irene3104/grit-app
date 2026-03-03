@@ -92,7 +92,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
             onClick={onNewTodos}
           >
             <span style={{ fontSize: '1.8rem' }}>📝</span>
-            <span style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: '600' }}>새로운 할 일 작성</span>
+            <span style={{ color: '#ffffff', fontSize: '1.1rem', fontWeight: '600' }}>새로운 퀘스트 작성</span>
             <span style={{ color: '#ffffff50', fontSize: '0.85rem' }}>같은 목표를 향해 계속 나아가기</span>
           </motion.button>
           <motion.button whileTap={{ scale: 0.95 }}
@@ -145,7 +145,7 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
         <div style={styles.left}>
           <p style={styles.goalText}>{data.goal}</p>
           <p style={styles.durationText}>{durationLabel} 목표</p>
-          <p style={styles.progressLabel}>{completedCount}/{totalCount} 완료</p>
+          <p style={styles.progressLabel}>⚔️ 퀘스트 {completedCount}/{totalCount} 완료</p>
           <div style={styles.todoList}>
             {todos.map((todo) => (
               <div key={todo.id} style={styles.todoItem}>

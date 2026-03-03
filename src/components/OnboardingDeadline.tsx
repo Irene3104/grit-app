@@ -27,7 +27,7 @@ export default function OnboardingDeadline({ onNext, onBack }: Props) {
       style={styles.container}
     >
       <button style={styles.backBtn} onClick={onBack}>← 뒤로</button>
-      <p style={styles.label}>오늘 할 일의 마감 시간을 정해주세요.</p>
+      <p style={styles.label}>퀘스트 마감 시간을 정해주세요.</p>
 
       <div style={styles.timeRow}>
         {/* 시 입력 */}

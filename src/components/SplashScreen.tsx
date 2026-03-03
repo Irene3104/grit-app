@@ -81,7 +81,7 @@ export default function SplashScreen({ onDone }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.5 }}
         >
-          시간 안에 완료하라. 실패하면 추락한다.
+          퀘스트를 완수하고 성장하라.
         </motion.p>
       </motion.div>
 

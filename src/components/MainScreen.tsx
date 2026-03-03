@@ -75,7 +75,14 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
 
   if (isDead) return <GameOver character={data.character} onRetry={onNewGoal} />;
   if (isSuccess && !showSuccess) {
-    return <Success goal={data.goal} character={data.character} onDone={() => setShowSuccess(true)} />;
+    return <Success
+      goal={data.goal}
+      character={data.character}
+      xpEarned={xp}
+      totalXp={xp}
+      level={level}
+      onDone={() => setShowSuccess(true)}
+    />;
   }
   if (showSuccess) {
     return (
@@ -122,10 +129,6 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
         >
           ⏱ {formatTime(timeLeftMs)}
         </motion.div>
-        <div style={styles.xpBadge}>
-          <span style={styles.xpLabel}>XP</span>
-          <span style={styles.xpVal}>{xp}</span>
-        </div>
       </div>
 
       {/* ── 퀘스트 보드 배지 ── */}
@@ -302,11 +305,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace',
   },
   timerUrgent: { color: '#ff6666' },
-  xpBadge: {
-    display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-  },
-  xpLabel: { color: '#ffffff40', fontSize: '0.6rem', letterSpacing: '0.1em' },
-  xpVal: { color: '#ffd700', fontSize: '0.9rem', fontWeight: '700', fontFamily: 'monospace' },
 
   // 배지
   boardBadge: {

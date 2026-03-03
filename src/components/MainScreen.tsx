@@ -102,22 +102,49 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   }
   if (showSuccess) {
     return (
-      <div style={styles.afterSuccess}>
-        <p style={styles.successTitle}>오늘도 수고했어요! 🎉</p>
-        <p style={styles.successSub}>다음은 무엇을 할까요?</p>
+      <motion.div style={styles.afterSuccess}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+      >
+        {/* 배지 */}
+        <div style={styles.afterBadge}>✦ QUEST BOARD ✦</div>
+
+        {/* 타이틀 */}
+        <div style={styles.afterTitleBlock}>
+          <p style={styles.successTitle}>퀘스트 완수!</p>
+          <p style={styles.successSub}>다음 목표를 선택하세요</p>
+        </div>
+
+        {/* 현재 레벨 표시 */}
+        <div style={styles.afterLevelRow}>
+          <span style={styles.afterLevelIcon}>🏆</span>
+          <span style={styles.afterLevelText}>LV.{level} {stage.name}</span>
+          <span style={styles.afterLevelXp}>{xp} XP</span>
+        </div>
+
         <div style={styles.successBtns}>
-          <motion.button whileTap={{ scale: 0.95 }} style={styles.afterBtn} onClick={onNewTodos}>
-            <span style={{ fontSize: '1.6rem' }}>📝</span>
-            <span style={styles.afterBtnTitle}>새로운 퀘스트 작성</span>
-            <span style={styles.afterBtnSub}>같은 목표를 향해 계속</span>
+          <motion.button whileTap={{ scale: 0.95 }} style={styles.afterBtnPrimary} onClick={onNewTodos}>
+            <div style={styles.afterBtnInner}>
+              <span style={styles.afterBtnIcon}>⚔️</span>
+              <div>
+                <p style={styles.afterBtnTitle}>새로운 퀘스트 작성</p>
+                <p style={styles.afterBtnSub}>같은 목표를 향해 계속 나아가기</p>
+              </div>
+            </div>
+            <span style={styles.afterBtnArrow}>→</span>
           </motion.button>
-          <motion.button whileTap={{ scale: 0.95 }} style={styles.afterBtn} onClick={onNewGoal}>
-            <span style={{ fontSize: '1.6rem' }}>🏔️</span>
-            <span style={styles.afterBtnTitle}>새로운 목표 설정</span>
-            <span style={styles.afterBtnSub}>새로운 도전 시작</span>
+
+          <motion.button whileTap={{ scale: 0.95 }} style={styles.afterBtnSecondary} onClick={onNewGoal}>
+            <div style={styles.afterBtnInner}>
+              <span style={styles.afterBtnIcon}>🗺️</span>
+              <div>
+                <p style={styles.afterBtnTitle}>새로운 목표 설정</p>
+                <p style={styles.afterBtnSub}>새로운 도전을 시작하기</p>
+              </div>
+            </div>
+            <span style={styles.afterBtnArrow}>→</span>
           </motion.button>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -438,18 +465,44 @@ const styles: Record<string, React.CSSProperties> = {
 
   // 성공 후 화면
   afterSuccess: {
-    minHeight: '100vh', background: 'linear-gradient(to bottom, #0a1a0a, #1a2a0a)',
+    minHeight: '100vh', background: '#0d0d14',
     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    gap: '1.5rem', padding: '2rem',
+    gap: '1.2rem', padding: '2rem 1.4rem',
   },
-  successTitle: { fontSize: '1.8rem', fontWeight: '700', color: '#ffffff', margin: 0 },
-  successSub: { color: '#ffffff60', margin: 0 },
-  successBtns: { display: 'flex', flexDirection: 'column', gap: '0.8rem', width: '100%', maxWidth: '360px' },
-  afterBtn: {
-    background: '#ffffff0d', border: '1.5px solid #ffffff20', borderRadius: '16px',
-    padding: '1.2rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-    gap: '0.3rem', cursor: 'pointer', textAlign: 'left',
+  afterBadge: {
+    background: '#a78bfa18', border: '1px solid #a78bfa50',
+    borderRadius: '999px', padding: '0.3rem 1rem',
+    color: '#a78bfa', fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.12em',
   },
-  afterBtnTitle: { color: '#ffffff', fontSize: '1rem', fontWeight: '600' },
-  afterBtnSub: { color: '#ffffff50', fontSize: '0.82rem' },
+  afterTitleBlock: { textAlign: 'center' as const },
+  successTitle: { fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', margin: 0 },
+  successSub: { color: '#ffffff50', margin: '0.3rem 0 0', fontSize: '0.85rem' },
+  afterLevelRow: {
+    display: 'flex', alignItems: 'center', gap: '0.6rem',
+    background: '#13131e', border: '1px solid #a78bfa30',
+    borderRadius: '12px', padding: '0.7rem 1.1rem', width: '100%', maxWidth: '360px',
+  },
+  afterLevelIcon: { fontSize: '1rem' },
+  afterLevelText: { color: '#fbbf24', fontWeight: '700', fontSize: '0.95rem', flex: 1 },
+  afterLevelXp: { color: '#ffffff40', fontSize: '0.75rem', fontFamily: 'monospace' },
+  successBtns: { display: 'flex', flexDirection: 'column', gap: '0.7rem', width: '100%', maxWidth: '360px' },
+  afterBtnPrimary: {
+    background: 'linear-gradient(135deg, #a78bfa18, #7c3aed18)',
+    border: '1.5px solid #a78bfa40',
+    borderRadius: '16px', padding: '1.1rem 1.2rem',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    cursor: 'pointer', textAlign: 'left' as const, width: '100%',
+  },
+  afterBtnSecondary: {
+    background: '#13131e',
+    border: '1px solid #ffffff12',
+    borderRadius: '16px', padding: '1.1rem 1.2rem',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    cursor: 'pointer', textAlign: 'left' as const, width: '100%',
+  },
+  afterBtnInner: { display: 'flex', alignItems: 'center', gap: '0.9rem' },
+  afterBtnIcon: { fontSize: '1.5rem', flexShrink: 0 },
+  afterBtnTitle: { color: '#ffffff', fontSize: '0.95rem', fontWeight: '700', margin: 0 },
+  afterBtnSub: { color: '#ffffff40', fontSize: '0.75rem', margin: '0.15rem 0 0' },
+  afterBtnArrow: { color: '#ffffff30', fontSize: '1.1rem', flexShrink: 0 },
 };

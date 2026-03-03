@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Character } from '../types';
-import { getStage, STAGES } from './PixelCharacter';
+import { getStage, STAGES, PixelCharacter } from './PixelCharacter';
 
 interface Props {
   goal: string;
@@ -30,19 +30,6 @@ const CONFETTI = Array.from({ length: 24 }, (_, i) => ({
   size: 5 + Math.random() * 7,
   rotate: Math.random() * 360,
 }));
-
-// 간단한 픽셀 고양이 (victory pose)
-function VictoryCat() {
-  return (
-    <motion.div
-      animate={{ y: [0, -10, 0] }}
-      transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-      style={{ fontSize: '4rem', filter: 'drop-shadow(0 0 16px #a78bfa80)' }}
-    >
-      🐱
-    </motion.div>
-  );
-}
 
 export default function Success({ goal, xpEarned, totalXp, level, onDone }: Props) {
   const [phase, setPhase] = useState(0);
@@ -95,12 +82,19 @@ export default function Success({ goal, xpEarned, totalXp, level, onDone }: Prop
               animate={{ y: 0, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
             >
-              <VictoryCat />
-              <motion.div style={styles.charName}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+              {/* 현재 레벨 픽셀 캐릭터 — 둥둥 떠다니는 애니메이션 */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ filter: 'drop-shadow(0 0 20px #a78bfa60)' }}
               >
-                <span style={styles.charNameText}>{stage.name}</span>
-                <span style={styles.charTitle}>{stage.title}</span>
+                <PixelCharacter
+                  level={level}
+                  xp={totalXp}
+                  xpInLevel={totalXp % 100}
+                  xpPerLevel={100}
+                  compact
+                />
               </motion.div>
             </motion.div>
           )}

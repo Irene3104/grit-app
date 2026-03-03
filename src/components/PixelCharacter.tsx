@@ -99,14 +99,26 @@ function PixelGrid({ pixels, size = 8 }: { pixels: string[][]; size?: number }) 
   );
 }
 
-export function PixelCharacter({ level, xp, xpInLevel, xpPerLevel }: {
+export function PixelCharacter({ level, xp, xpInLevel, xpPerLevel, compact }: {
   level: number;
   xp: number;
   xpInLevel: number;
   xpPerLevel: number;
+  compact?: boolean;
 }) {
   const stage = useMemo(() => getStage(level), [level]);
   const xpPct = Math.min((xpInLevel / xpPerLevel) * 100, 100);
+
+  // compact 모드: 캐릭터 + 이름만 크게, 나머지 숨김
+  if (compact) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
+        <PixelGrid pixels={stage.pixels} size={14} />
+        <p style={{ color: '#fbbf24', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>{stage.name}</p>
+        <p style={{ color: '#ffffff50', fontSize: '0.72rem', margin: 0 }}>{stage.title}</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{

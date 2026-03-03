@@ -46,7 +46,7 @@ export default function SplashScreen({ onDone }: Props) {
           <img
             src="/questify-logo.png"
             alt="Questify"
-            style={{ width: '180px', height: '180px', objectFit: 'contain' }}
+            style={{ width: '280px', height: '280px', objectFit: 'contain' }}
           />
         </motion.div>
 

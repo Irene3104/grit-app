@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import type { GritData, OnboardingStep, TodoItem } from './types';
+import SplashScreen from './components/SplashScreen';
 import OnboardingGoal from './components/OnboardingGoal';
 import OnboardingDuration from './components/OnboardingDuration';
 import OnboardingTodos from './components/OnboardingTodos';
@@ -15,7 +16,7 @@ const initialData: GritData = {
 };
 
 export default function App() {
-  const [step, setStep] = useState<OnboardingStep>('goal');
+  const [step, setStep] = useState<OnboardingStep>('splash');
   const [data, setData] = useState<GritData>(initialData);
 
   const resetAll = () => {
@@ -31,6 +32,9 @@ export default function App() {
 
   return (
     <AnimatePresence mode="wait">
+      {step === 'splash' && (
+        <SplashScreen key="splash" onDone={() => setStep('goal')} />
+      )}
       {step === 'goal' && (
         <OnboardingGoal key="goal"
           onNext={(goal) => { setData((d) => ({ ...d, goal })); setStep('duration'); }}

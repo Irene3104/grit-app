@@ -47,6 +47,12 @@ export default function OnboardingTodos({ onNext, onBack, initialTodos }: Props)
               <input style={styles.input} type="text" placeholder="퀘스트를 입력하세요"
                 value={todo.text} onChange={(e) => updateTodo(todo.id, e.target.value)}
                 autoFocus={idx === todos.length - 1}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && todo.text.trim()) {
+                    e.preventDefault();
+                    addTodo();
+                  }
+                }}
               />
               {todos.length > 1 && (
                 <button style={styles.remove} onClick={() => removeTodo(todo.id)}>✕</button>

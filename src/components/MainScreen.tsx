@@ -5,6 +5,14 @@ import { useGameEngine } from '../hooks/useGameEngine';
 import GameOver from './GameOver';
 import Success from './Success';
 import PomodoroModal from './PomodoroModal';
+import { PixelCharacter, getStage } from './PixelCharacter';
+import { LevelUpOverlay } from './LevelUpOverlay';
+
+const XP_PER_LEVEL = 100;
+const BASE_XP = 20;
+
+function getLevel(xp: number) { return Math.floor(xp / XP_PER_LEVEL) + 1; }
+function getXpInLevel(xp: number) { return xp % XP_PER_LEVEL; }
 
 interface Props {
   data: GritData;
@@ -40,45 +48,31 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const toggleTodoRef = useRef<(id: string) => void>(() => {});
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // 스프라이트 프레임 전환
-  // 픽셀아트 등반 8프레임
-  const wallFrames = Array.from({ length: 8 }, (_, i) => `/characters/climb-frame-${i}.png`);
-  const [frameIdx, setFrameIdx] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setFrameIdx(i => (i + 1) % wallFrames.length), 120); // 빠르게 교체
-    return () => clearInterval(id);
-  }, []);
+  // XP / 레벨 시스템
+  const [xp, setXp] = useState(0);
+  const [levelUpShow, setLevelUpShow] = useState(false);
+  const level = getLevel(xp);
+  const xpInLevel = getXpInLevel(xp);
+  const prevLevelRef = useRef(1);
 
-  const {
-    lives, progress, slipping, oneHandMode, timeLeftMs,
-    metersLeft, isDead, isSuccess, toggleTodo, completedCount, totalCount,
+    const {
+    lives, slipping, oneHandMode, timeLeftMs,
+    isDead, isSuccess, toggleTodo, completedCount, totalCount,
   } = useGameEngine(todos, setTodos, data.deadlineHour, data.deadlinePeriod);
-  toggleTodoRef.current = toggleTodo; // 항상 최신 toggleTodo 유지
+  toggleTodoRef.current = toggleTodo;
+
+  // 레벨업 감지
+  useEffect(() => {
+    if (level > prevLevelRef.current) {
+      setLevelUpShow(true);
+      setTimeout(() => setLevelUpShow(false), 2500);
+      prevLevelRef.current = level;
+    }
+  }, [level]); // 항상 최신 toggleTodo 유지
 
   const isUrgent = timeLeftMs <= 2 * 60 * 60 * 1000 && completedCount < totalCount;
   const isCritical = timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
   const durationLabel = DURATION_LABEL[data.duration] || data.customDate;
-
-  // 클리프 존 실제 높이 측정
-  const cliffZoneRef = useRef<HTMLDivElement>(null);
-  const [cliffHeight, setCliffHeight] = useState(0);
-  useEffect(() => {
-    const el = cliffZoneRef.current;
-    if (!el) return;
-    const obs = new ResizeObserver(() => setCliffHeight(el.clientHeight));
-    obs.observe(el);
-    setCliffHeight(el.clientHeight);
-    return () => obs.disconnect();
-  }, []);
-
-  // 캐릭터 픽셀 위치 (bottom 기준)
-  // progress=0 → 바닥(bottom=8px), progress=1 → 정상(bottom=cliffHeight-80px)
-  const CHAR_SIZE = 64;
-  const BOTTOM_PAD = 8;
-  const TOP_PAD = 16;
-  const charBottomPx = cliffHeight > 0
-    ? BOTTOM_PAD + progress * (cliffHeight - CHAR_SIZE - BOTTOM_PAD - TOP_PAD)
-    : BOTTOM_PAD;
 
   if (isDead) return <GameOver character={data.character} onRetry={onNewGoal} />;
 
@@ -158,7 +152,10 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
                 <motion.div
                   style={{ ...styles.checkbox, ...(todo.completed ? styles.checkboxDone : {}) }}
                   animate={todo.completed ? { scale: [1, 1.3, 1] } : {}}
-                  onClick={() => toggleTodo(todo.id)}
+                  onClick={() => {
+                    if (!todo.completed) setXp(prev => prev + BASE_XP); // 체크 시 XP
+                    toggleTodo(todo.id);
+                  }}
                   whileTap={{ scale: 0.9 }}
                 >
                   {todo.completed && '✓'}
@@ -177,129 +174,31 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           </div>
         </div>
 
-        {/* ===== 암벽 패널 — 화면 오른쪽 끝 고정 ===== */}
+        {/* ===== 레벨업 패널 ===== */}
         <div style={styles.cliffPanel}>
-
-          {/* 암벽 구역 */}
-          <div style={styles.cliffZone} ref={cliffZoneRef}>
-
-            {/* ── 암벽 SVG: 직각삼각형 + 울퉁불퉁 왼쪽 면 ── */}
-            <svg
-              style={styles.cliffImg as React.CSSProperties}
-              viewBox="0 0 80 500"
-              preserveAspectRatio="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* 직각삼각형 기본형: 오른쪽 직각, 왼쪽이 경사면 */}
-              {/* 바닥 오른쪽(80,500) → 꼭대기 오른쪽(80,0) → 꼭대기 왼쪽(20,0) */}
-              <polygon points="80,500 80,0 18,0" fill="#3a3d52"/>
-
-              {/* 울퉁불퉁한 왼쪽 경사면 (캐릭터가 오르는 면) */}
-              <path d="
-                M18,0
-                L22,30  L14,55
-                L24,80  L12,110
-                L20,135 L10,160
-                L22,185 L14,215
-                L26,240 L16,265
-                L24,290 L12,318
-                L22,345 L14,370
-                L26,395 L16,420
-                L24,448 L18,475
-                L20,500 L80,500 L80,0 Z
-              " fill="#464966"/>
-
-              {/* 경사면 암석 돌출부 (울퉁불퉁 강조) */}
-              <path d="M14,55  L4,65  L14,72"  fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
-              <path d="M10,160 L2,172 L12,180" fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
-              <path d="M12,318 L2,330 L14,338" fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
-              <path d="M14,370 L4,382 L16,390" fill="#525578" stroke="#5a5e80" strokeWidth="0.5"/>
-
-              {/* 바위 면 레이어감 */}
-              <path d="M40,500 L80,500 L80,350 L50,350 Z" fill="#404360" opacity="0.5"/>
-              <path d="M50,340 L80,340 L80,180 L60,180 Z" fill="#404360" opacity="0.4"/>
-              <path d="M60,170 L80,170 L80,60  L68,60  Z" fill="#3a3d52" opacity="0.6"/>
-
-              {/* 수직 균열선 */}
-              <path d="M60,500 Q57,420 62,340 Q58,260 63,180 Q59,100 64,20"
-                    stroke="#2d3045" strokeWidth="1.5" fill="none" opacity="0.7"/>
-              <path d="M72,500 Q70,400 73,300 Q71,200 74,100"
-                    stroke="#2d3045" strokeWidth="1" fill="none" opacity="0.5"/>
-
-              {/* 홀드 — 경사면 위에 */}
-              <ellipse cx="20" cy="60"  rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
-              <ellipse cx="16" cy="155" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
-              <ellipse cx="20" cy="255" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
-              <ellipse cx="16" cy="350" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
-              <ellipse cx="20" cy="445" rx="5" ry="3" fill="#6e7099" stroke="#8888bb" strokeWidth="0.8"/>
-
-              {/* 이끼 */}
-              <ellipse cx="25" cy="200" rx="7" ry="3" fill="#2d5a2d" opacity="0.5"/>
-              <ellipse cx="22" cy="380" rx="6" ry="2.5" fill="#2d5a2d" opacity="0.4"/>
-            </svg>
-
-            {/* 정상 표시 — 암벽 상단에 */}
-            <div style={styles.summit}>
-              <span style={{ fontSize: '1.2rem' }}>⭐</span>
-              <span style={styles.summitLabel}>정상</span>
-            </div>
-
-            {/* 남은 거리 — 정상 바로 아래 */}
-            <div style={styles.metersTag}>
-              <span style={styles.metersText}>{metersLeft}m</span>
-              <span style={styles.metersSubText}>남음</span>
-            </div>
-
-            {/* 미완료 구간 어두운 오버레이 */}
-            <motion.div
-              style={styles.progressOverlay}
-              animate={{ height: `${(1 - progress) * 100}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
+            <PixelCharacter
+              level={level}
+              xp={xp}
+              xpInLevel={xpInLevel}
+              xpPerLevel={XP_PER_LEVEL}
             />
-
-            {/* 캐릭터 — 할일 완료에 따라 위로 이동 */}
-            <motion.div
-              style={{
-                ...styles.charWrap,
-                filter: slipping ? 'drop-shadow(0 0 10px #ff4444)' : undefined,
-              }}
-              animate={{
-                bottom: charBottomPx,
-                x: slipping ? [-6, 6, -4, 4, 0] : 0,
-              }}
-              transition={{ duration: 1.0, ease: 'easeOut' }}
-            >
-              <motion.img
-                src={wallFrames[frameIdx]}
-                alt="cat climbing"
-                style={{
-                  width: '56px',
-                  height: '112px',
-                  objectFit: 'contain',
-                  imageRendering: 'pixelated',  // 픽셀아트 선명하게
-                  filter: slipping
-                    ? 'drop-shadow(0 0 6px #ff4444) hue-rotate(0deg)'
-                    : oneHandMode
-                    ? 'drop-shadow(0 0 5px #ffaa00)'
-                    : 'none',
-                } as React.CSSProperties}
-              />
-              {oneHandMode && (
-                <motion.div
-                  style={styles.dangerBadge}
-                  animate={{ opacity: [1, 0.2, 1], scale: [1, 1.2, 1] }}
-                  transition={{ duration: 0.5, repeat: Infinity }}
-                >⚠️</motion.div>
-              )}
-            </motion.div>
-          </div>
-
-          {/* 바닥 */}
-          <div style={styles.ground}>
-            <span style={{ fontSize: '1rem' }}>💀</span>
+            {/* 위험 상태 표시 */}
+            {oneHandMode && (
+              <motion.div
+                style={{ textAlign: 'center', marginTop: '0.5rem' }}
+                animate={{ opacity: [1, 0.2, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >⚠️ 위험!</motion.div>
+            )}
           </div>
         </div>
-      </div>
+
+        {/* 레벨업 오버레이 */}
+        <LevelUpOverlay
+          show={levelUpShow}
+          level={level}
+          stageName={getStage(level).name}
+        />
 
       {/* 포모도로 모달 */}
       <AnimatePresence>
@@ -311,10 +210,10 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
             onComplete={() => {
                 const current = pomodoroTodoRef.current;
                 if (current) {
-                  // 직접 setTodos로 체크 — toggleTodo ref 우회
                   setTodos(prev =>
                     prev.map(t => t.id === current.id ? { ...t, completed: true } : t)
                   );
+                  setXp(prev => prev + BASE_XP * 2); // 포모도로 완료: 2배 XP
                   setTimeout(() => setPomodoroTodo(null), 1800);
                 }
               }}

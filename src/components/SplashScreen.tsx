@@ -1,46 +1,46 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-// 픽셀 아트 전사 실루엣 로고
-// 각 행: 1=보라(갑옷), 2=골드(장식), 3=밝은보라(하이라이트), 0=투명
-const WARRIOR_PIXELS = [
-  [0,0,1,1,1,1,0,0],  // 투구 윗부분
-  [0,1,2,1,1,2,1,0],  // 투구 (골드 장식)
-  [0,1,1,3,3,1,1,0],  // 얼굴
-  [0,0,1,1,1,1,0,0],  // 목
-  [1,1,1,1,1,1,1,1],  // 어깨 (넓음)
-  [0,1,2,1,1,2,1,0],  // 몸통 (골드 장식)
-  [0,1,1,1,1,1,1,0],  // 몸통 하단
-  [0,0,2,0,0,2,0,0],  // 검 손잡이
-  [0,0,2,0,0,2,0,0],  // 검 날
-  [0,0,3,0,0,3,0,0],  // 검 끝 (빛남)
-];
-
-const PIXEL_COLORS: Record<number, string> = {
-  1: '#a78bfa',  // 보라 (갑옷)
-  2: '#fbbf24',  // 골드 (장식/검)
-  3: '#e0d7ff',  // 밝은 보라 (하이라이트)
-};
-
-function PixelWarriorLogo() {
-  const size = 8;
+// 칼 + 방패 SVG 로고
+function SwordShieldLogo() {
   return (
-    <div style={{
-      display: 'inline-flex', flexDirection: 'column',
-      imageRendering: 'pixelated',
-      filter: 'drop-shadow(0 0 12px #a78bfa80)',
-    }}>
-      {WARRIOR_PIXELS.map((row, y) => (
-        <div key={y} style={{ display: 'flex' }}>
-          {row.map((cell, x) => (
-            <div key={x} style={{
-              width: size, height: size,
-              backgroundColor: PIXEL_COLORS[cell] ?? 'transparent',
-            }} />
-          ))}
-        </div>
-      ))}
-    </div>
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg"
+      style={{ filter: 'drop-shadow(0 0 14px #a78bfa70)' }}
+    >
+      {/* 방패 */}
+      <path d="M18 16 L18 44 Q18 58 32 64 Q46 58 46 44 L46 16 Z"
+        fill="#1e1b4b" stroke="#a78bfa" strokeWidth="2.5" strokeLinejoin="round"/>
+      {/* 방패 내부 장식 — 마름모 */}
+      <path d="M32 24 L38 34 L32 44 L26 34 Z"
+        fill="none" stroke="#a78bfa" strokeWidth="1.5" opacity="0.6"/>
+      {/* 방패 중앙 보석 */}
+      <circle cx="32" cy="34" r="4" fill="#a78bfa" opacity="0.9"/>
+      <circle cx="32" cy="34" r="2" fill="#e0d7ff"/>
+      {/* 방패 테두리 하이라이트 */}
+      <path d="M21 18 L21 43 Q21 54 32 60"
+        stroke="#c4b5fd" strokeWidth="1" opacity="0.4" strokeLinecap="round"/>
+
+      {/* 칼 — 대각선 (오른쪽 위에서 왼쪽 아래로) */}
+      {/* 칼날 */}
+      <line x1="52" y1="12" x2="30" y2="58"
+        stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"/>
+      {/* 칼날 하이라이트 */}
+      <line x1="54" y1="14" x2="32" y2="56"
+        stroke="#fef3c7" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
+      {/* 가드 (크로스가드) */}
+      <line x1="58" y1="28" x2="44" y2="22"
+        stroke="#fbbf24" strokeWidth="4" strokeLinecap="round"/>
+      {/* 손잡이 */}
+      <line x1="62" y1="18" x2="56" y2="30"
+        stroke="#92400e" strokeWidth="5" strokeLinecap="round"/>
+      {/* 손잡이 래핑 */}
+      <line x1="61" y1="20" x2="59" y2="24"
+        stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+      <line x1="59" y1="24" x2="57" y2="28"
+        stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+      {/* 칼끝 빛남 */}
+      <circle cx="30" cy="58" r="2.5" fill="#fef3c7" opacity="0.8"/>
+    </svg>
   );
 }
 
@@ -86,7 +86,7 @@ export default function SplashScreen({ onDone }: Props) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <PixelWarriorLogo />
+          <SwordShieldLogo />
         </motion.div>
 
         {/* Questify 타이포 */}

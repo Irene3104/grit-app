@@ -4,12 +4,14 @@ import { motion } from 'framer-motion';
 interface Props {
   onNext: (hour: string, period: 'AM' | 'PM') => void;
   onBack: () => void;
+  initialHour?: string;
+  initialPeriod?: 'AM' | 'PM';
 }
 
-export default function OnboardingDeadline({ onNext, onBack }: Props) {
-  const [hour, setHour] = useState('11');
-  const [minute, setMinute] = useState('00');
-  const [period, setPeriod] = useState<'AM' | 'PM'>('PM');
+export default function OnboardingDeadline({ onNext, onBack, initialHour = '11:00', initialPeriod = 'PM' }: Props) {
+  const [hour, setHour] = useState(initialHour.split(':')[0] || '11');
+  const [minute, setMinute] = useState(initialHour.split(':')[1] || '00');
+  const [period, setPeriod] = useState<'AM' | 'PM'>(initialPeriod);
 
   // 유효성: hour 1-12, minute 0-59
   const hourNum = parseInt(hour) || 0;

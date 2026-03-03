@@ -5,10 +5,15 @@ import type { TodoItem } from '../types';
 interface Props {
   onNext: (todos: TodoItem[]) => void;
   onBack: () => void;
+  initialTodos?: TodoItem[];
 }
 
-export default function OnboardingTodos({ onNext, onBack }: Props) {
-  const [todos, setTodos] = useState<TodoItem[]>([{ id: '1', text: '', completed: false }]);
+export default function OnboardingTodos({ onNext, onBack, initialTodos }: Props) {
+  const [todos, setTodos] = useState<TodoItem[]>(
+    initialTodos && initialTodos.length > 0
+      ? initialTodos
+      : [{ id: '1', text: '', completed: false }]
+  );
 
   const updateTodo = (id: string, text: string) =>
     setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));

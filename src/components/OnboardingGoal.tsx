@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 
 interface Props {
   onNext: (goal: string) => void;
+  initialValue?: string;
 }
 
-export default function OnboardingGoal({ onNext }: Props) {
-  const [goal, setGoal] = useState('');
+export default function OnboardingGoal({ onNext, initialValue = '' }: Props) {
+  const [goal, setGoal] = useState(initialValue);
 
   return (
     <motion.div

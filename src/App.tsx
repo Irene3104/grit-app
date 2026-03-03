@@ -37,23 +37,29 @@ export default function App() {
       )}
       {step === 'goal' && (
         <OnboardingGoal key="goal"
+          initialValue={data.goal}
           onNext={(goal) => { setData((d) => ({ ...d, goal })); setStep('duration'); }}
         />
       )}
       {step === 'duration' && (
         <OnboardingDuration key="duration"
+          initialDuration={data.duration}
+          initialCustomDate={data.customDate}
           onNext={(duration, customDate) => { setData((d) => ({ ...d, duration, customDate })); setStep('todos'); }}
           onBack={() => setStep('goal')}
         />
       )}
       {step === 'todos' && (
         <OnboardingTodos key="todos"
+          initialTodos={data.todos}
           onNext={(todos: TodoItem[]) => { setData((d) => ({ ...d, todos })); setStep('deadline'); }}
           onBack={() => setStep('duration')}
         />
       )}
       {step === 'deadline' && (
         <OnboardingDeadline key="deadline"
+          initialHour={data.deadlineHour}
+          initialPeriod={data.deadlinePeriod}
           onNext={(deadlineHour, deadlinePeriod) => { setData((d) => ({ ...d, deadlineHour, deadlinePeriod })); setStep('quest-start'); }}
           onBack={() => setStep('todos')}
         />

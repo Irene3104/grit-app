@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 interface Props {
   onNext: (duration: string, customDate: string) => void;
   onBack: () => void;
+  initialDuration?: string;
+  initialCustomDate?: string;
 }
 
 const OPTIONS = [
@@ -13,9 +15,9 @@ const OPTIONS = [
   { id: 'custom', label: '직접 설정' },
 ];
 
-export default function OnboardingDuration({ onNext, onBack }: Props) {
-  const [selected, setSelected] = useState('');
-  const [customDate, setCustomDate] = useState('');
+export default function OnboardingDuration({ onNext, onBack, initialDuration = '', initialCustomDate = '' }: Props) {
+  const [selected, setSelected] = useState(initialDuration);
+  const [customDate, setCustomDate] = useState(initialCustomDate);
   const canNext = selected && (selected !== 'custom' || customDate.trim());
 
   return (

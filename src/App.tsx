@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import type { GritData, OnboardingStep, TodoItem } from './types';
+import type { GritData, OnboardingStep, TodoItem, AuthUser } from './types';
 import SplashScreen from './components/SplashScreen';
+import LoginScreen from './components/LoginScreen';
 import OnboardingGoal from './components/OnboardingGoal';
 import OnboardingDuration from './components/OnboardingDuration';
 import OnboardingTodos from './components/OnboardingTodos';
@@ -17,6 +18,7 @@ const initialData: GritData = {
 export default function App() {
   const [step, setStep] = useState<OnboardingStep>('splash');
   const [data, setData] = useState<GritData>(initialData);
+  const [_user, setUser] = useState<AuthUser | null>(null);
 
   const resetAll = () => {
     localStorage.removeItem('grit_session_start');
@@ -30,10 +32,20 @@ export default function App() {
     setStep('todos');
   };
 
+  const handleLogin = (authUser: AuthUser) => {
+    setUser(authUser);
+    // 기존 데이터 있으면 main으로, 없으면 온보딩으로
+    const hasOnboarded = localStorage.getItem('questify_onboarded');
+    setStep(hasOnboarded ? 'main' : 'goal');
+  };
+
   return (
     <AnimatePresence mode="wait">
       {step === 'splash' && (
-        <SplashScreen key="splash" onDone={() => setStep('goal')} />
+        <SplashScreen key="splash" onDone={() => setStep('login')} />
+      )}
+      {step === 'login' && (
+        <LoginScreen key="login" onLogin={handleLogin} />
       )}
       {step === 'goal' && (
         <OnboardingGoal key="goal"
@@ -65,7 +77,10 @@ export default function App() {
         />
       )}
       {step === 'quest-start' && (
-        <QuestStart key="quest-start" goal={data.goal} onDone={() => setStep('main')} />
+        <QuestStart key="quest-start" goal={data.goal} onDone={() => {
+          localStorage.setItem('questify_onboarded', '1');
+          setStep('main');
+        }} />
       )}
       {step === 'main' && (
         <MainScreen key="main" data={data}

@@ -18,9 +18,17 @@ export interface GritData {
 
 export type OnboardingStep =
   | 'splash'
+  | 'login'
   | 'goal'
   | 'duration'
   | 'todos'
   | 'deadline'
   | 'quest-start'
   | 'main';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  displayName: string;
+  provider: 'google' | 'email';
+}

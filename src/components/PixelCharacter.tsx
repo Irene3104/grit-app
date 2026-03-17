@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo } from 'react';
+import { CREATURES, getCreature, getEvolutionIndex, getNextEvolutionLevel } from '../data/characters';
 
 const PALETTE: Record<string, string> = {
   _: 'transparent',
@@ -23,67 +24,34 @@ export interface CharacterStage {
   nextLevel: number | null;
 }
 
-export const STAGES: CharacterStage[] = [
-  {
-    name: '슬라임', title: '초보 모험가의 동반자', nextLevel: 3,
-    pixels: [
-      ['_','_','_','g','g','g','_','_','_'],
-      ['_','_','g','G','G','G','g','_','_'],
-      ['_','g','G','G','G','G','G','g','_'],
-      ['_','g','G','W','K','G','W','K','_'],
-      ['_','g','G','G','G','G','G','g','_'],
-      ['_','_','g','G','G','G','g','_','_'],
-      ['_','_','_','g','g','g','_','_','_'],
-    ],
-  },
-  {
-    name: '전사', title: '검을 든 용감한 전사', nextLevel: 6,
-    pixels: [
-      ['_','_','_','S','s','S','_','_','_'],
-      ['_','_','S','s','S','s','S','_','_'],
-      ['_','_','_','F','F','F','_','_','_'],
-      ['_','_','F','W','K','W','K','_','_'],
-      ['_','_','_','F','F','F','_','_','_'],
-      ['_','S','B','B','B','B','B','S','_'],
-      ['_','_','_','B','B','B','_','_','_'],
-      ['_','_','B','_','_','_','B','_','_'],
-    ],
-  },
-  {
-    name: '기사', title: '황금 갑옷의 수호자', nextLevel: 10,
-    pixels: [
-      ['_','_','Y','y','Y','y','Y','_','_'],
-      ['_','Y','y','S','s','S','y','Y','_'],
-      ['_','_','_','F','F','F','_','_','_'],
-      ['_','_','F','W','K','W','K','_','_'],
-      ['_','_','_','F','F','F','_','_','_'],
-      ['R','Y','B','B','Y','B','B','Y','R'],
-      ['R','_','_','B','B','B','_','_','R'],
-      ['_','_','B','_','_','_','B','_','_'],
-    ],
-  },
-  {
-    name: '대마법사', title: '전설의 대마법사', nextLevel: null,
-    pixels: [
-      ['_','_','_','P','p','P','_','_','_'],
-      ['_','_','P','p','Y','p','P','_','_'],
-      ['_','P','p','P','p','P','p','P','_'],
-      ['_','_','_','F','F','F','_','_','_'],
-      ['_','_','F','C','K','C','K','_','_'],
-      ['_','_','_','F','F','F','_','_','_'],
-      ['_','C','P','P','P','P','P','C','_'],
-      ['c','_','_','P','P','P','_','_','c'],
-      ['_','_','P','_','_','_','P','_','_'],
-    ],
-  },
-];
-
+// ── 레거시 호환: getStage (레벨 기반) ──
 export function getStage(level: number): CharacterStage {
-  if (level >= 10) return STAGES[3];
-  if (level >= 6)  return STAGES[2];
-  if (level >= 3)  return STAGES[1];
-  return STAGES[0];
+  const creatureType = getCreature() || 'slime';
+  const creature = CREATURES[creatureType];
+  const evoIdx = getEvolutionIndex(level);
+  const stage = creature.stages[evoIdx];
+  const nextLv = getNextEvolutionLevel(level);
+
+  return {
+    name: stage.name,
+    title: stage.title,
+    pixels: stage.pixels,
+    nextLevel: nextLv,
+  };
 }
+
+// ── 레거시 호환: STAGES 배열 ──
+export const STAGES: CharacterStage[] = (() => {
+  const creatureType = getCreature() || 'slime';
+  const creature = CREATURES[creatureType];
+  const levels = [3, 6, 10, null];
+  return creature.stages.map((s, i) => ({
+    name: s.name,
+    title: s.title,
+    pixels: s.pixels,
+    nextLevel: levels[i],
+  }));
+})();
 
 function PixelGrid({ pixels, size = 8 }: { pixels: string[][]; size?: number }) {
   return (
@@ -107,14 +75,18 @@ export function PixelCharacter({ level, xp, xpInLevel, xpPerLevel, compact }: {
   compact?: boolean;
 }) {
   const stage = useMemo(() => getStage(level), [level]);
+  const creatureType = getCreature() || 'slime';
+  const creature = CREATURES[creatureType];
+  const evoIdx = getEvolutionIndex(level);
   const xpPct = Math.min((xpInLevel / xpPerLevel) * 100, 100);
+  const nextStage = evoIdx < 3 ? creature.stages[evoIdx + 1] : null;
 
   // compact 모드: 캐릭터 + 이름만 크게, 나머지 숨김
   if (compact) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
         <PixelGrid pixels={stage.pixels} size={14} />
-        <p style={{ color: '#fbbf24', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>{stage.name}</p>
+        <p style={{ color: creature.color, fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>{stage.name}</p>
         <p style={{ color: '#ffffff50', fontSize: '0.72rem', margin: 0 }}>{stage.title}</p>
       </div>
     );
@@ -156,7 +128,9 @@ export function PixelCharacter({ level, xp, xpInLevel, xpPerLevel, compact }: {
 
       {/* 캐릭터 이름 */}
       <div style={{ textAlign: 'center' }}>
-        <p style={{ color: '#ffd700', fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>{stage.name}</p>
+        <p style={{ color: creature.color, fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>
+          {creature.emoji} {stage.name}
+        </p>
         <p style={{ color: '#ffffff60', fontSize: '0.6rem', margin: '0.2rem 0 0' }}>{stage.title}</p>
       </div>
 
@@ -170,13 +144,13 @@ export function PixelCharacter({ level, xp, xpInLevel, xpPerLevel, compact }: {
         </div>
         <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
           <motion.div
-            style={{ height: '100%', background: 'linear-gradient(to right, #ffd700, #ffaa00)', borderRadius: '3px' }}
+            style={{ height: '100%', background: `linear-gradient(to right, ${creature.color}, #ffaa00)`, borderRadius: '3px' }}
             animate={{ width: `${xpPct}%` }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
           />
         </div>
         <p style={{ color: '#ffffff40', fontSize: '0.55rem', textAlign: 'center', marginTop: '0.3rem' }}>
-          {stage.nextLevel ? `Lv.${stage.nextLevel}에 ${STAGES[STAGES.indexOf(stage)+1]?.name || ''}` : '최종 형태 🎉'}
+          {nextStage ? `Lv.${stage.nextLevel}에 ${nextStage.name}으로 진화!` : '최종 형태 🎉'}
         </p>
       </div>
 

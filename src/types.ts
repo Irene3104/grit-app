@@ -19,6 +19,7 @@ export interface GritData {
 export type OnboardingStep =
   | 'splash'
   | 'login'
+  | 'egg-hatch'
   | 'goal'
   | 'duration'
   | 'todos'

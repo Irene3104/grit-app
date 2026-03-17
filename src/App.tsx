@@ -3,12 +3,14 @@ import { AnimatePresence } from 'framer-motion';
 import type { GritData, OnboardingStep, TodoItem, AuthUser } from './types';
 import SplashScreen from './components/SplashScreen';
 import LoginScreen from './components/LoginScreen';
+import EggHatchScreen from './components/EggHatchScreen';
 import OnboardingGoal from './components/OnboardingGoal';
 import OnboardingDuration from './components/OnboardingDuration';
 import OnboardingTodos from './components/OnboardingTodos';
 import OnboardingDeadline from './components/OnboardingDeadline';
 import QuestStart from './components/QuestStart';
 import MainScreen from './components/MainScreen';
+import { getCreature } from './data/characters';
 
 const initialData: GritData = {
   goal: '', duration: '', customDate: '', todos: [],
@@ -34,9 +36,14 @@ export default function App() {
 
   const handleLogin = (authUser: AuthUser) => {
     setUser(authUser);
-    // 기존 데이터 있으면 main으로, 없으면 온보딩으로
     const hasOnboarded = localStorage.getItem('questify_onboarded');
-    setStep(hasOnboarded ? 'main' : 'goal');
+    if (hasOnboarded) {
+      setStep('main');
+    } else {
+      // 알 부화 안 했으면 알 부화부터, 했으면 온보딩
+      const hasCreature = getCreature();
+      setStep(hasCreature ? 'goal' : 'egg-hatch');
+    }
   };
 
   return (
@@ -46,6 +53,9 @@ export default function App() {
       )}
       {step === 'login' && (
         <LoginScreen key="login" onLogin={handleLogin} />
+      )}
+      {step === 'egg-hatch' && (
+        <EggHatchScreen key="egg-hatch" onDone={() => setStep('goal')} />
       )}
       {step === 'goal' && (
         <OnboardingGoal key="goal"

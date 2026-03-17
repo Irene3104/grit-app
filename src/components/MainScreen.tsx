@@ -7,6 +7,7 @@ import Success from './Success';
 import PomodoroModal from './PomodoroModal';
 import { PixelCharacter, getStage } from './PixelCharacter';
 import { LevelUpOverlay } from './LevelUpOverlay';
+import { getDailyQuest, isDailyQuestCompleted, completeDailyQuest } from '../data/dailyQuests';
 
 const XP_PER_LEVEL = 100;
 
@@ -42,12 +43,19 @@ interface Props {
   onNewGoal: () => void;
 }
 
+const DAILY_QUEST_XP = 50;
+
 export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
   const [todos, setTodos] = useState(data.todos);
   const [pomodoroTodo, setPomodoroTodo] = useState<{ text: string; id: string } | null>(null);
   const pomodoroTodoRef = useRef<{ text: string; id: string } | null>(null);
   pomodoroTodoRef.current = pomodoroTodo;
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // 데일리 사이드 퀘스트
+  const dailyQuest = getDailyQuest();
+  const [dailyCompleted, setDailyCompleted] = useState(isDailyQuestCompleted());
+  const [dailyXpAnim, setDailyXpAnim] = useState(false);
 
   // XP — localStorage에서 불러와서 세션 간 유지
   const [xp, setXp] = useState<number>(() => {
@@ -87,6 +95,15 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
       prevLevelRef.current = level;
     }
   }, [level]);
+
+  const handleDailyComplete = () => {
+    if (dailyCompleted) return;
+    completeDailyQuest();
+    setDailyCompleted(true);
+    setXp(prev => prev + DAILY_QUEST_XP);
+    setDailyXpAnim(true);
+    setTimeout(() => setDailyXpAnim(false), 1500);
+  };
 
   const isUrgent = timeLeftMs <= 2 * 60 * 60 * 1000 && completedCount < totalCount;
   const isCritical = timeLeftMs <= 30 * 60 * 1000 && completedCount < totalCount;
@@ -206,6 +223,59 @@ export default function MainScreen({ data, onNewTodos, onNewGoal }: Props) {
           >⚠️ 위험 상태!</motion.p>
         )}
       </div>
+
+      {/* ── 오늘의 사이드 퀘스트 ── */}
+      <motion.div
+        style={{
+          ...styles.sideQuestCard,
+          ...(dailyCompleted ? styles.sideQuestDone : {}),
+        }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div style={styles.sideQuestHeader}>
+          <span style={styles.sideQuestBadge}>⚡ SIDE QUEST</span>
+          {dailyCompleted && <span style={styles.sideQuestClear}>CLEAR!</span>}
+        </div>
+        <div style={styles.sideQuestBody}>
+          <span style={styles.sideQuestEmoji}>{dailyQuest.emoji}</span>
+          <p style={{
+            ...styles.sideQuestText,
+            ...(dailyCompleted ? { textDecoration: 'line-through', color: '#ffffff40' } : {}),
+          }}>
+            {dailyQuest.text}
+          </p>
+        </div>
+        <div style={styles.sideQuestFooter}>
+          <span style={styles.sideQuestXpLabel}>보상: +{DAILY_QUEST_XP} XP</span>
+          <motion.button
+            style={{
+              ...styles.sideQuestBtn,
+              ...(dailyCompleted ? styles.sideQuestBtnDone : {}),
+            }}
+            whileTap={!dailyCompleted ? { scale: 0.93 } : {}}
+            onClick={handleDailyComplete}
+            disabled={dailyCompleted}
+          >
+            {dailyCompleted ? '✅ 완료!' : '완료하기'}
+          </motion.button>
+        </div>
+        {/* +50 XP 애니메이션 */}
+        <AnimatePresence>
+          {dailyXpAnim && (
+            <motion.div
+              style={styles.dailyXpFloat}
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 0, y: -40 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+            >
+              +{DAILY_QUEST_XP} XP ⚡
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* ── 스탯 그리드 ── */}
       <div style={styles.statGrid}>
@@ -386,6 +456,96 @@ const styles: Record<string, React.CSSProperties> = {
   },
   charCardBody: { width: '100%', maxWidth: '200px' },
   danger: { color: '#ff6666', fontSize: '0.85rem', margin: '0.5rem 0 0' },
+
+  // 사이드 퀘스트
+  sideQuestCard: {
+    background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+    border: '1px solid #fbbf2440',
+    borderRadius: '16px',
+    padding: '0.9rem 1rem',
+    marginBottom: '0.8rem',
+    position: 'relative' as const,
+    overflow: 'hidden',
+  },
+  sideQuestDone: {
+    borderColor: '#4ade8030',
+    background: 'linear-gradient(135deg, #0f1a14, #13131e)',
+  },
+  sideQuestHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '0.5rem',
+  },
+  sideQuestBadge: {
+    color: '#fbbf24',
+    fontSize: '0.6rem',
+    fontWeight: '700',
+    letterSpacing: '0.1em',
+    background: '#fbbf2415',
+    borderRadius: '999px',
+    padding: '0.15rem 0.6rem',
+  },
+  sideQuestClear: {
+    color: '#4ade80',
+    fontSize: '0.6rem',
+    fontWeight: '800',
+    letterSpacing: '0.1em',
+  },
+  sideQuestBody: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.7rem',
+    marginBottom: '0.6rem',
+  },
+  sideQuestEmoji: {
+    fontSize: '1.6rem',
+    flexShrink: 0,
+  },
+  sideQuestText: {
+    color: '#ffffffdd',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    margin: 0,
+    lineHeight: 1.4,
+  },
+  sideQuestFooter: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sideQuestXpLabel: {
+    color: '#fbbf24',
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    fontFamily: 'monospace',
+  },
+  sideQuestBtn: {
+    background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+    border: 'none',
+    borderRadius: '999px',
+    padding: '0.4rem 1.2rem',
+    color: '#ffffff',
+    fontSize: '0.8rem',
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  sideQuestBtnDone: {
+    background: '#4ade8020',
+    color: '#4ade80',
+    cursor: 'default',
+  },
+  dailyXpFloat: {
+    position: 'absolute' as const,
+    top: '30%',
+    right: '1.5rem',
+    color: '#fbbf24',
+    fontWeight: '800',
+    fontSize: '1.3rem',
+    fontFamily: 'monospace',
+    textShadow: '0 0 12px #fbbf2480',
+    pointerEvents: 'none' as const,
+  },
 
   // 스탯 그리드
   statGrid: {
